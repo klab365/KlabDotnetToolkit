@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C59488BB-C973-455D-BE6E-7EC833857D69}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5849BB39-F7EF-456D-82FC-81FE9223FF8D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.Common", "src\Klab.Toolkit.Common\Klab.Toolkit.Common.csproj", "{5DC22004-B73F-4F5A-A0F5-1FE55D370119}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B66E8088-12CC-40D9-8EC5-30DC77978226}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.CommonTests", "test\Klab.Toolkit.CommonTests\Klab.Toolkit.CommonTests.csproj", "{E513F3E3-7430-40A5-8845-CE120378D7C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|Any CPU.Build.0 = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|x64.ActiveCfg = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|x64.Build.0 = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|x86.ActiveCfg = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Debug|x86.Build.0 = Debug|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|Any CPU.ActiveCfg = Release|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|Any CPU.Build.0 = Release|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|x64.ActiveCfg = Release|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|x64.Build.0 = Release|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|x86.ActiveCfg = Release|x64
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119}.Release|x86.Build.0 = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|Any CPU.Build.0 = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|x64.ActiveCfg = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|x64.Build.0 = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|x86.ActiveCfg = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Debug|x86.Build.0 = Debug|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|Any CPU.ActiveCfg = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|Any CPU.Build.0 = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x64.ActiveCfg = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x64.Build.0 = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x86.ActiveCfg = Release|x64
+		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x86.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5DC22004-B73F-4F5A-A0F5-1FE55D370119} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
+		{E513F3E3-7430-40A5-8845-CE120378D7C5} = {B66E8088-12CC-40D9-8EC5-30DC77978226}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A56BD2A-9DA2-4FA2-9F1B-0F034EE91364}
+	EndGlobalSection
+EndGlobal
