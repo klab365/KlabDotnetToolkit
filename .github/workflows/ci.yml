@@ -24,18 +24,12 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
-    - name: Add dotnet-format problem matcher
-      uses: xt0rted/dotnet-format-problem-matcher@v1
-
-    - name: Restore dotnet tools
-      uses: xt0rted/dotnet-tool-restore@v1
-
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal
 
   format:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
@@ -49,4 +43,4 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Run dotnet format
-      run: dotnet format '.\' --folder --check --verbosity diagnostic
+      run: dotnet format --verify-no-changes -v diag
