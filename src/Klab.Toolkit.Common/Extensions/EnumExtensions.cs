@@ -62,13 +62,13 @@ public static class EnumExtensions
     {
         FieldInfo[] fieldInfos = typeof(T).GetFields();
 
-        Dictionary<string, string> table = new ();
+        Dictionary<string, string> table = new();
         foreach (FieldInfo info in fieldInfos)
         {
             DescriptionAttribute? descriptionAttribute = info.GetCustomAttribute<DescriptionAttribute>(inherit: true);
             if (descriptionAttribute is null)
             {
-                return new ();
+                continue;
             }
 
             table.Add(info.Name, descriptionAttribute.Description);
