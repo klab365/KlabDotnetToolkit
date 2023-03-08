@@ -1,4 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Klab
+// The Klab licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -34,17 +38,17 @@ public static class StringExtensions
     /// <summary>
     /// Regular expression for removing comments from HTML.
     /// </summary>
-    private static readonly Regex RemoveHtmlCommentsRegex = new("<!--.*?-->", RegexOptions.Singleline);
+    private static readonly Regex RemoveHtmlCommentsRegex = new ("<!--.*?-->", RegexOptions.Singleline);
 
     /// <summary>
     /// Regular expression for removing scripts from HTML.
     /// </summary>
-    private static readonly Regex RemoveHtmlScriptsRegex = new(@"(?s)<script.*?(/>|</script>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+    private static readonly Regex RemoveHtmlScriptsRegex = new (@"(?s)<script.*?(/>|</script>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Regular expression for removing styles from HTML.
     /// </summary>
-    private static readonly Regex RemoveHtmlStylesRegex = new(@"(?s)<style.*?(/>|</style>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+    private static readonly Regex RemoveHtmlStylesRegex = new (@"(?s)<style.*?(/>|</style>)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Determines whether a string is a valid email address.

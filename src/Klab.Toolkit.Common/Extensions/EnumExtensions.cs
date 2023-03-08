@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace Klab.Toolkit.Common.Extensions;
 
+/// <summary>
+/// Extensions for enums.
+/// </summary>
 public static class EnumExtensions
 {
     /// <summary>
@@ -12,7 +15,8 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="enumValue"></param>
     /// <returns></returns>
-    public static string GetEnumDescription<T>(this T enumValue) where T : struct, IConvertible
+    public static string GetDescription<T>(this T enumValue)
+        where T : struct, IConvertible
     {
         if (!typeof(T).IsEnum)
         {
@@ -41,7 +45,7 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Will get the name of the enum and the description from the description attribute
+    /// Will get the name of the enum and the description from the description attribute.
     /// </summary>
     /// <code>
     /// public enum Test : int
@@ -49,8 +53,8 @@ public static class EnumExtensions
     ///     [DescriptionAttribute("This is a test")]
     ///     EnumA = 10
     /// }
-    /// 
-    /// Dictionary<string, string> table = EnumExtensions.GetDictionaryWithEnumNameAndDescription&lt;Test&gt;();
+    ///
+    /// Dictionary.&lt;string, string&gt; table = EnumExtensions.GetDictionaryWithEnumNameAndDescription&lt;Test&gt;();.
     /// </code>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -58,13 +62,13 @@ public static class EnumExtensions
     {
         FieldInfo[] fieldInfos = typeof(T).GetFields();
 
-        Dictionary<string, string> table = new();
+        Dictionary<string, string> table = new ();
         foreach (FieldInfo info in fieldInfos)
         {
             DescriptionAttribute? descriptionAttribute = info.GetCustomAttribute<DescriptionAttribute>(inherit: true);
             if (descriptionAttribute is null)
             {
-                return new();
+                return new ();
             }
 
             table.Add(info.Name, descriptionAttribute.Description);

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C59488BB-C973-455D-BE6E-7EC833857D69}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		GlobalSuppressions.cs = GlobalSuppressions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5849BB39-F7EF-456D-82FC-81FE9223FF8D}"
@@ -15,6 +17,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B66E8088-12CC-40D9-8EC5-30DC77978226}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.CommonTests", "test\Klab.Toolkit.CommonTests\Klab.Toolkit.CommonTests.csproj", "{E513F3E3-7430-40A5-8845-CE120378D7C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.Configuration", "src\Klab.Toolkit.Configuration\Klab.Toolkit.Configuration.csproj", "{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.ConfigurationTests", "test\Klab.Toolkit.ConfigurationTests\Klab.Toolkit.ConfigurationTests.csproj", "{738D651E-1368-4BD6-A745-0BE432C8A0F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +56,30 @@ Global
 		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x64.Build.0 = Release|x64
 		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x86.ActiveCfg = Release|x64
 		{E513F3E3-7430-40A5-8845-CE120378D7C5}.Release|x86.Build.0 = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|Any CPU.Build.0 = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|x64.ActiveCfg = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|x64.Build.0 = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|x86.ActiveCfg = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Debug|x86.Build.0 = Debug|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|Any CPU.ActiveCfg = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|Any CPU.Build.0 = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|x64.ActiveCfg = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|x64.Build.0 = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|x86.ActiveCfg = Release|x64
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}.Release|x86.Build.0 = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|Any CPU.Build.0 = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|x64.ActiveCfg = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|x64.Build.0 = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|x86.ActiveCfg = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Debug|x86.Build.0 = Debug|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|Any CPU.ActiveCfg = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|Any CPU.Build.0 = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|x64.ActiveCfg = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|x64.Build.0 = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|x86.ActiveCfg = Release|x64
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,6 +87,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5DC22004-B73F-4F5A-A0F5-1FE55D370119} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
 		{E513F3E3-7430-40A5-8845-CE120378D7C5} = {B66E8088-12CC-40D9-8EC5-30DC77978226}
+		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
+		{738D651E-1368-4BD6-A745-0BE432C8A0F7} = {B66E8088-12CC-40D9-8EC5-30DC77978226}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A56BD2A-9DA2-4FA2-9F1B-0F034EE91364}
