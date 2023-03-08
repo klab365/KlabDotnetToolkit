@@ -1,25 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Klab.Toolkit.Common.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 
 namespace Klab.Toolkit.Common.Entities.Tests;
 
-[TestClass()]
+[TestClass]
 public class ResultTests
 {
-    [TestMethod()]
+    [TestMethod]
     public void SuccessTest()
     {
         Result<bool> result = Result<bool>.Success(true);
         _ = result.Value.Should().Be(true);
     }
 
-    [TestMethod()]
+    [TestMethod]
     public void FailureTest()
     {
         Result<bool> result = Result<bool>.Failure(new string[] { "error 1", "error 2" });

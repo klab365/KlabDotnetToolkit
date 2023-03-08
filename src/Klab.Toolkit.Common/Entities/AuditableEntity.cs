@@ -1,12 +1,31 @@
-﻿namespace Klab.Toolkit.Common.Entities;
+﻿// Copyright (c) Klab
+// The Klab licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
+namespace Klab.Toolkit.Common.Entities;
+
+/// <summary>
+/// This class is a base class for all entities that need to be audited.
+/// </summary>
 public abstract class AuditableEntity
 {
+    /// <summary>
+    /// Gets or sets date time when the entity was created.
+    /// </summary>
     public DateTime Created { get; set; }
 
-    public string? CreatedBy { get; set; }
+    /// <summary>
+    /// Gets or sets user who created the entity. can be empty.
+    /// </summary>
+    public string CreatedBy { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets date time when the entity was last modified. Can be null.
+    /// </summary>
     public DateTime? LastModified { get; set; }
 
-    public string? LastModifiedBy { get; set; }
+    /// <summary>
+    /// Gets or sets user who last modified the entity. Can be empty.
+    /// </summary>
+    public string LastModifiedBy { get; set; } = string.Empty;
 }

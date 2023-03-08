@@ -2,15 +2,15 @@
 
 /// <summary>
 /// Represents a result of an operation
-/// 
-/// Additionally it contains a value which can be used to return the result of the operation 
-/// and error messages if the operation failed
+/// Additionally it contains a value which can be used to return the result of the operation
+/// and error messages if the operation failed.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Result<T> where T : struct
+public class Result<T>
+    where T : struct
 {
     /// <summary>
-    /// Generate direct a Result is forbidden
+    /// Initializes a new instance of the <see cref="Result{T}"/> class.
     /// </summary>
     /// <param name="succeeded"></param>
     /// <param name="value"></param>
@@ -23,22 +23,22 @@ public class Result<T> where T : struct
     }
 
     /// <summary>
-    /// Indicates the operation was successfull
+    /// Gets a value indicating whether indicates the operation was successfull.
     /// </summary>
     public bool Succeeded { get; }
 
     /// <summary>
-    /// Contains Errors
+    /// Gets contains Errors.
     /// </summary>
-    public string[]? Errors { get; }
+    public string[] Errors { get; }
 
     /// <summary>
-    /// Value which contains the result of the operation
+    /// Gets value which contains the result of the operation.
     /// </summary>
     public T? Value { get; }
 
     /// <summary>
-    /// Generate a success
+    /// Generate a success.
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
@@ -48,7 +48,7 @@ public class Result<T> where T : struct
     }
 
     /// <summary>
-    /// Genearate a failure
+    /// Genearate a failure.
     /// </summary>
     /// <param name="errors"></param>
     /// <returns></returns>
