@@ -54,7 +54,7 @@ public class Property<T> : IProperty<T>
     /// <param name="value"></param>
     /// <returns></returns>
     public Property(string displayName, T value)
-        : this(displayName, value, new ())
+        : this(displayName, value, new())
     {
     }
 
