@@ -15,8 +15,7 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="enumValue"></param>
     /// <returns></returns>
-    public static string GetDescription<T>(this T enumValue)
-        where T : struct, IConvertible
+    public static string GetDescription<T>(this T enumValue) where T : struct, IConvertible
     {
         if (!typeof(T).IsEnum)
         {

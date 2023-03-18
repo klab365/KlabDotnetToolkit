@@ -31,8 +31,7 @@ public interface IProperty
 /// Interface for write read property.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IProperty<T> : IProperty
-    where T : struct
+public interface IProperty<T> : IProperty where T : struct
 {
     /// <summary>
     /// Gets or sets value of the property.

@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Klab.Toolkit.Common.String;
 
 namespace Klab.Toolkit.Common.Extensions.Tests;
 

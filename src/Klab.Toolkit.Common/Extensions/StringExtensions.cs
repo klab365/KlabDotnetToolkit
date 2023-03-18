@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace Klab.Toolkit.Common.String;
+namespace Klab.Toolkit.Common.Extensions;
 
 /// <summary>
 /// Helpers for working with strings and string representations.
