@@ -1,11 +1,7 @@
-﻿// Copyright (c) Klab
-// The Klab licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-namespace Klab.Toolkit.Common.Entities;
+﻿namespace Klab.Toolkit.Common.Entities;
 
 /// <summary>
-/// This class is a base class for all entities that need to be audited.
+/// This class is a base class for all entities that need to be audit.
 /// </summary>
 public abstract class AuditableEntity
 {

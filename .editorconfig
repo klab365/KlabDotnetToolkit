@@ -2,6 +2,7 @@
 root=true
 
 [*]
+end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = space
@@ -63,6 +64,10 @@ dotnet_diagnostic.SA1516.severity = silent
 csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
 csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = true:silent
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.CA1716.severity = none
 
 # Code files
 [*.{cs,csx,vb,vbx}]
@@ -437,7 +442,6 @@ resharper_invert_if_highlighting=none
 resharper_localizable_element_highlighting=hint
 resharper_redundant_base_qualifier_highlighting=warning
 tab_width = 4
-end_of_line = crlf
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_namespace_match_folder = false:suggestion
 dotnet_style_allow_multiple_blank_lines_experimental = true:silent
