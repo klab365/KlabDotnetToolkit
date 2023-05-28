@@ -1,24 +1,34 @@
 <Project>
   <PropertyGroup>
-    <Copyright>Copyright (C) 2023 Klab</Copyright>
     <AssemblyCompany>Klab</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2023 Klab</AssemblyCopyright>
     <AssemblyProduct>Klab.Toolkit</AssemblyProduct>
     <Company>Klab</Company>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <Platforms>x64</Platforms>
     <PackageTags>toolkit</PackageTags>
     <AnalysisMode>Recommended</AnalysisMode>
-    <PlatformTarget>$(Platform)</PlatformTarget>
-    <TargetFramework>net6.0, net7.0</TargetFramework>
+    <TargetFrameworks>net7.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>anycpu</PlatformTarget>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <RepositoryUrl></RepositoryUrl>
+  <PropertyGroup Label="NuGet">
+    <Authors>Burak Kizilkaya</Authors>
+    <Copyright>Copyright (C) 2023 Klab</Copyright>
+
+    <RepositoryUrl>https://github.com/BuriKizilkaya/KlabDotnetToolkit</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <GenerateRepositoryUrlAttribute>true</GenerateRepositoryUrlAttribute>
+
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -28,5 +38,23 @@
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs"
       Link="GlobalSuppressions.cs" />
+
+    <None Include="$(MSBuildThisFileDirectory)Readme.md" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <!-- Test projects -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <PackageReference Include="Moq" Version="4.18.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2" />
+    <PackageReference Include="FluentAssertions" Version="6.10.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
 </Project>
