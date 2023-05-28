@@ -16,15 +16,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.Common", "src\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B66E8088-12CC-40D9-8EC5-30DC77978226}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.CommonTests", "test\Klab.Toolkit.CommonTests\Klab.Toolkit.CommonTests.csproj", "{E513F3E3-7430-40A5-8845-CE120378D7C5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.Configuration", "src\Klab.Toolkit.Configuration\Klab.Toolkit.Configuration.csproj", "{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Klab.Toolkit.ConfigurationTests", "test\Klab.Toolkit.ConfigurationTests\Klab.Toolkit.ConfigurationTests.csproj", "{738D651E-1368-4BD6-A745-0BE432C8A0F7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.DI", "src\Klab.Toolkit.DI\Klab.Toolkit.DI.csproj", "{CEC4763C-65B3-4B4D-919D-7880BED7D594}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Logging", "src\Klab.Toolkit.Logging\Klab.Toolkit.Logging.csproj", "{75E6CBB8-1164-4282-A870-A8564DD21761}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F5EDD347-5036-4456-B3A7-C7403D48FEE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.CommonTests", "tests\Klab.Toolkit.Common.Tests\Klab.Toolkit.Common.Tests.csproj", "{936E10AD-C657-42CA-954A-2B6EC90E5A0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Configuration.Tests", "tests\Klab.Toolkit.Configuration.Tests\Klab.Toolkit.Configuration.Tests.csproj", "{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,17 +110,41 @@ Global
 		{75E6CBB8-1164-4282-A870-A8564DD21761}.Release|x64.Build.0 = Release|x64
 		{75E6CBB8-1164-4282-A870-A8564DD21761}.Release|x86.ActiveCfg = Release|x64
 		{75E6CBB8-1164-4282-A870-A8564DD21761}.Release|x86.Build.0 = Release|x64
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|x64.Build.0 = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Debug|x86.Build.0 = Debug|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|x64.ActiveCfg = Release|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|x64.Build.0 = Release|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|x86.ActiveCfg = Release|Any CPU
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F}.Release|x86.Build.0 = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|x64.Build.0 = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Debug|x86.Build.0 = Debug|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|x64.ActiveCfg = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|x64.Build.0 = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|x86.ActiveCfg = Release|Any CPU
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5DC22004-B73F-4F5A-A0F5-1FE55D370119} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
-		{E513F3E3-7430-40A5-8845-CE120378D7C5} = {B66E8088-12CC-40D9-8EC5-30DC77978226}
 		{EDF26AA6-BB3B-4B49-BE29-6FA814B0DA84} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
-		{738D651E-1368-4BD6-A745-0BE432C8A0F7} = {B66E8088-12CC-40D9-8EC5-30DC77978226}
 		{CEC4763C-65B3-4B4D-919D-7880BED7D594} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
 		{75E6CBB8-1164-4282-A870-A8564DD21761} = {5849BB39-F7EF-456D-82FC-81FE9223FF8D}
+		{936E10AD-C657-42CA-954A-2B6EC90E5A0F} = {F5EDD347-5036-4456-B3A7-C7403D48FEE3}
+		{867B1DF1-5D4F-41F9-97E9-4C3E2CC6A000} = {F5EDD347-5036-4456-B3A7-C7403D48FEE3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A56BD2A-9DA2-4FA2-9F1B-0F034EE91364}
