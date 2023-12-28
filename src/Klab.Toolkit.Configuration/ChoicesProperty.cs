@@ -1,15 +1,16 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Klab.Toolkit.Configuration;
 
 /// <summary>
 /// This Class is selectable property which contains a list of values and
-/// always can have one value.
+/// always can have one selected value.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-[DebuggerDisplay("{DisplayName}: {Value} ({Possibilities})")]
-public class ChoicesProperty<T> : IProperty<T>
-    where T : struct
+[DebuggerDisplay("{Name}: {Value} ({Possibilities})")]
+public class ChoicesProperty<T> : IProperty<T> where T : struct
 {
     /// <inheritdoc/>
     public event EventHandler? PropertyChanged;
@@ -20,7 +21,7 @@ public class ChoicesProperty<T> : IProperty<T>
     public List<T> Possibilities { get; }
 
     /// <inheritdoc/>
-    public string DisplayName { get; }
+    public string Name { get; }
 
     private T _value;
 
@@ -42,14 +43,14 @@ public class ChoicesProperty<T> : IProperty<T>
     /// <param name="possibilities"></param>
     public ChoicesProperty(string displayName, List<T> possibilities)
     {
-        DisplayName = displayName;
+        Name = displayName;
         Possibilities = possibilities;
     }
 
     /// <inheritdoc/>
     public bool IsValid()
     {
-        if (!Possibilities.Any())
+        if (Possibilities.Count == 0)
         {
             return true;
         }

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Klab.Toolkit.ExtensionMethods\Klab.Toolkit.ExtensionMethods.csproj" />
+  </ItemGroup>
+</Project>

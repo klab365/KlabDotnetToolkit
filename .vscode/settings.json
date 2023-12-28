@@ -1,4 +1,23 @@
 {
-  "sarif-viewer.connectToGithubCodeScanning": "off",
-  "cSpell.words": ["infrastructure"]
+  "cSpell.words": [
+    "clock",
+    "Communicator",
+    "Disposable",
+    "Implementation",
+    "infrastructure",
+    "Klab",
+    "Publisher",
+    "Serial",
+    "Sleep",
+    "Suppress",
+    "Toolkit"
+  ],
+  "dotnet.defaultSolution": "KlabDotnetToolkit.sln",
+  "cSpell.enabled": false,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/bin/**": true,
+    "**/obj/**": true,
+  }
 }
