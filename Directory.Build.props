@@ -3,32 +3,29 @@
     <AssemblyCompany>Klab</AssemblyCompany>
     <AssemblyProduct>Klab.Toolkit</AssemblyProduct>
     <Company>Klab</Company>
-    <NeutralLanguage>en-US</NeutralLanguage>
     <PackageTags>toolkit</PackageTags>
     <AnalysisMode>Recommended</AnalysisMode>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <PlatformTarget>anycpu</PlatformTarget>
+    <PlatformTarget>AnyCpu</PlatformTarget>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
     <Authors>Burak Kizilkaya</Authors>
-    <Copyright>Copyright (C) 2023 Klab</Copyright>
-
+    <Copyright>Copyright (C) 2023 klab</Copyright>
     <RepositoryUrl>https://github.com/BuriKizilkaya/KlabDotnetToolkit</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
 
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateRepositoryUrlAttribute>true</GenerateRepositoryUrlAttribute>
-
-    <PackageReadmeFile>Readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -36,11 +33,22 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs"
-      Link="GlobalSuppressions.cs" />
-
     <None Include="$(MSBuildThisFileDirectory)Readme.md" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <!--Global packages-->
+  <ItemGroup>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.5.0.73987">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Global packages without Tests -->
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+  </ItemGroup>
+
 
   <!-- Test projects -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
@@ -53,8 +61,11 @@
   </ItemGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
-    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>X64</PlatformTarget>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 </Project>

@@ -1,31 +1,19 @@
-﻿using Klab.Toolkit.Common.Entities;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Common;
-
-/// <summary>
-/// Interface for a retry
-/// </summary>
-public interface IRetryService
-{
-    /// <summary>
-    /// Try to call the given callback.
-    ///
-    /// If the callback throws an exception, it will be retried. If the callback
-    /// succeeds, the result will be returned.
-    /// </summary>
-    /// <param name="callback"></param>
-    /// <param name="retryCount"></param>
-    /// <returns>result if the call was successful</returns>
-    Result TryCall(Action callback, int retryCount = 3);
-}
 
 /// <summary>
 /// Implementation of <see cref="IRetryService"/>.
 /// </summary>
 public class RetryService : IRetryService
 {
+    private const int ErrorId = 9999;
+
     /// <inheritdoc/>
-    public Result TryCall(Action callback, int retryCount = 3)
+    public async Task<Result> TryCallAsync(Func<CancellationToken, Task> callback, TimeSpan timeout, int retryCount = 3)
     {
         int numberOfRetries = retryCount;
         Result result = Result.Failure(Error.None);
@@ -34,12 +22,14 @@ public class RetryService : IRetryService
         {
             try
             {
-                callback();
+                using CancellationTokenSource cancellationTokenSource = new(timeout);
+                await callback(cancellationTokenSource.Token);
                 return Result.Success();
             }
             catch (Exception e)
             {
-                result = Result.Failure(e);
+                Error error = Error.FromException(ErrorId, e);
+                result = error;
             }
 
             numberOfRetries--;

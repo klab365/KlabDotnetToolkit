@@ -2,6 +2,8 @@
 // The Klab licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Klab.Toolkit.Configuration;
 
 /// <summary>
@@ -18,7 +20,7 @@ public interface IProperty
     /// <summary>
     /// Gets display name of the property.
     /// </summary>
-    string DisplayName { get; }
+    string Name { get; }
 
     /// <summary>
     /// Validates the property.
