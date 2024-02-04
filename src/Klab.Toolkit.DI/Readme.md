@@ -1,4 +1,4 @@
-# KLAB - Depency Injection Toolkit
+# Klab.Toolkit.DI
 
 In this project I try to implement a simple and lightweight dependency injection toolkit. The toolkit contains helper classes for the following tasks:
 
@@ -39,5 +39,3 @@ IEnumerable<IDependency> all = factory.GetAllInstances();
 IEnumerable<string> keys = factory.Keys;
 
 ```
-
-## Generic Factory - Initialize with a common parameter interface

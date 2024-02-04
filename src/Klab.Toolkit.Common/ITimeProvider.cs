@@ -17,5 +17,5 @@ public interface ITimeProvider
     /// Get the current time.
     /// </summary>
     /// <returns></returns>
-    DateTime GetCurrentTime();
+    DateTimeOffset GetCurrentTime();
 }

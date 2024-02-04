@@ -18,7 +18,7 @@ public class ResultTests
     {
         Result<TestClass> result = new TestClass();
         result.IsSuccess.Should().Be(true);
-        result.Value?.Should().NotBeNull();
+        result.Value.Should().NotBeNull();
     }
 
     [TestMethod]
