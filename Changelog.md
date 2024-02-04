@@ -12,6 +12,9 @@ This document is valid within the scope of the work for all projects.
 
 ## [Unreleased]
 
+* Optimize Result class (non nullable)
+* Add more extension methods
+
 ## 2.0.0 - 28.12.2023
 
 ### Added

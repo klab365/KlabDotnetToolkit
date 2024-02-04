@@ -20,8 +20,8 @@ public class TimeProvider : ITimeProvider
     }
 
     /// <inheritdoc/>
-    public DateTime GetCurrentTime()
+    public DateTimeOffset GetCurrentTime()
     {
-        return DateTime.UtcNow;
+        return new DateTimeOffset(DateTime.UtcNow);
     }
 }

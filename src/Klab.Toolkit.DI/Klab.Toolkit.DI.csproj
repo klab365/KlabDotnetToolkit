@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
-    </PropertyGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\Klab.Toolkit.Common\Klab.Toolkit.Common.csproj" />
     </ItemGroup>
-
 </Project>

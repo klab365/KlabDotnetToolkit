@@ -32,8 +32,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <None Include="$(MSBuildThisFileDirectory)Readme.md" Pack="true" PackagePath="" />
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+    <None Include="$(MSBuildProjectDirectory)/Readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <!--Global packages-->
