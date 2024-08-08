@@ -1,21 +1,22 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Klab.Toolkit.Results;
 
 /// <summary>
-/// Error class
+/// Informative Error which is not pending, if the error was read by the user!!
 /// </summary>
-public record Error
+public record InformativeError : IError
 {
     /// <summary>
-    /// None Error
+    /// Flag to indicate the error was read or not
     /// </summary>
-    public static Error None => new(0, string.Empty);
+    public bool IsRead { get; set; }
 
     /// <summary>
     /// Error code
     /// </summary>
-    public int Code { get; }
+    public string Code { get; }
 
     /// <summary>
     /// Message
@@ -32,13 +33,16 @@ public record Error
     /// </summary>
     public string StackTrace { get; set; } = string.Empty;
 
+    /// <inheritdoc/>
+    public bool ShouldQueue => true;
+
     /// <summary>
     /// Create a new Error
     /// </summary>
     /// <param name="code"></param>
     /// <param name="message"></param>
     /// <param name="advice"></param>
-    public Error(int code, string message, string advice = "")
+    public InformativeError(string code, string message, string advice = "")
     {
         Code = code;
         Message = message;
@@ -50,8 +54,15 @@ public record Error
     /// </summary>
     /// <param name="id"></param>
     /// <param name="ex"></param>
-    public static Error FromException(int id, Exception ex)
+    public static InformativeError FromException(string id, Exception ex)
     {
-        return new Error(id, ex.Message, ex.StackTrace ?? string.Empty);
+        return new InformativeError(id, ex.Message, ex.StackTrace ?? string.Empty);
+    }
+
+    /// <inheritdoc/>
+    public Task<bool> IsPendingAsyc()
+    {
+        bool isPending = !IsRead;
+        return Task.FromResult(isPending);
     }
 }
