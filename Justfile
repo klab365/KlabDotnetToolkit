@@ -1,3 +1,9 @@
+set windows-shell := ["powershell"]
+
+# add projects to solution
+add-projects:
+    dotnet sln add ls -r **/*.csproj
+
 # build the solution
 build *args:
     echo "Building..."

@@ -10,13 +10,11 @@ namespace Klab.Toolkit.Common;
 /// </summary>
 public class RetryService : IRetryService
 {
-    private const int ErrorId = 9999;
-
     /// <inheritdoc/>
     public async Task<Result> TryCallAsync(Func<CancellationToken, Task> callback, TimeSpan timeout, int retryCount = 3)
     {
         int numberOfRetries = retryCount;
-        Result result = Result.Failure(Error.None);
+        Result? result = null;
 
         while (numberOfRetries > 0)
         {
@@ -28,13 +26,13 @@ public class RetryService : IRetryService
             }
             catch (Exception e)
             {
-                Error error = Error.FromException(ErrorId, e);
+                InformativeError error = InformativeError.FromException("RetryService", e);
                 result = error;
             }
 
             numberOfRetries--;
         }
 
-        return result;
+        return result!;
     }
 }

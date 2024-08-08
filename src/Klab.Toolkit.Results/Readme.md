@@ -2,5 +2,5 @@
 
 ## Purpose
 
-This project is a part of the Klab.Toolkit solution and is used to return results from methods. The result can be a success or a failure and can contain a value or an error message.
+This project is a part of the Klab.Toolkit solution and is used to return results from methods. The result can be a success or a failure and can contain a value or an error message. The error is a interface and can be extended. Default Error Types are: `InformativeError`, `ErrorNone`.
 
