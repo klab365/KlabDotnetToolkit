@@ -9,11 +9,6 @@ namespace Klab.Toolkit.Results;
 public record InformativeError : IError
 {
     /// <summary>
-    /// Flag to indicate the error was read or not
-    /// </summary>
-    public bool IsRead { get; set; }
-
-    /// <summary>
     /// Error code
     /// </summary>
     public string Code { get; }
@@ -62,7 +57,6 @@ public record InformativeError : IError
     /// <inheritdoc/>
     public Task<bool> IsPendingAsyc()
     {
-        bool isPending = !IsRead;
-        return Task.FromResult(isPending);
+        return Task.FromResult(false);
     }
 }
