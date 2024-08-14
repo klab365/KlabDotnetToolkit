@@ -27,7 +27,7 @@ public class RetryService : IRetryService
             catch (Exception e)
             {
                 InformativeError error = InformativeError.FromException("RetryService", e);
-                result = error;
+                result = Result.Failure(error);
             }
 
             numberOfRetries--;

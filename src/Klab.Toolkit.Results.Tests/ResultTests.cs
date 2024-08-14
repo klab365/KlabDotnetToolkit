@@ -8,7 +8,7 @@ public class ResultTests
     [TestMethod]
     public void SuccessTest()
     {
-        Result<int> result = 100;
+        Result<int> result = Result.Success(100);
         result.IsSuccess.Should().Be(true);
         result.Value.Should().Be(100);
     }
@@ -16,7 +16,7 @@ public class ResultTests
     [TestMethod]
     public void SuccessTest_With_Class()
     {
-        Result<TestClass> result = new TestClass();
+        Result<TestClass> result = Result<TestClass>.Success(new TestClass());
         result.IsSuccess.Should().Be(true);
         result.Value.Should().NotBeNull();
     }
@@ -33,10 +33,19 @@ public class ResultTests
     [TestMethod]
     public void FailureTest_WithClass()
     {
-        Result result = new InformativeError("1", "error");
+        Result result = Result.Failure(new InformativeError("1", "error"));
 
         result.Error.Message.Should().Be("error");
         result.IsSuccess.Should().Be(false);
+    }
+
+    [TestMethod]
+    public void FailureTest_Generic()
+    {
+        Result<string> res = Result.Failure<string>(new InformativeError("1", "error"));
+
+        res.IsFailure.Should().BeTrue();
+        res.Error.Message.Should().Be("error");
     }
 }
 

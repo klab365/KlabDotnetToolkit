@@ -42,20 +42,33 @@ public class Result
     }
 
     /// <summary>
+    /// Generate a success with a value.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static Result<T> Success<T>(T value) where T : notnull
+    {
+        return new Result<T>(value, true, new ErrorNone());
+    }
+
+    /// <summary>
     /// Generate a failure.
     /// </summary>
-    public static Result Failure(InformativeError error)
+    public static Result Failure(IError error)
     {
         return new Result(false, error);
     }
 
     /// <summary>
-    /// Generate a error implicit from error
+    /// Generate a failure with a value (default).
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     /// <param name="error"></param>
-    public static implicit operator Result(InformativeError error)
+    /// <returns></returns>
+    public static Result<T> Failure<T>(IError error) where T : notnull
     {
-        return Failure(error);
+        return new Result<T>(default!, false, error);
     }
 }
 
@@ -79,44 +92,8 @@ public class Result<T> : Result where T : notnull
     /// <param name="value"></param>
     /// <param name="isSuccess"></param>
     /// <param name="error"></param>
-    protected Result(T value, bool isSuccess, IError error) : base(isSuccess, error)
+    internal Result(T value, bool isSuccess, IError error) : base(isSuccess, error)
     {
         _value = value;
-    }
-
-    /// <summary>
-    /// Generate a success with a value
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public static Result<T> Success(T value)
-    {
-        return new Result<T>(value, true, new ErrorNone());
-    }
-
-    /// <summary>
-    /// Generate a failure with an error
-    /// </summary>
-    public static Result<T> CreateFailure(InformativeError error)
-    {
-        return new Result<T>(default!, false, error);
-    }
-
-    /// <summary>
-    /// Generate a implicit success from a value
-    /// </summary>
-    /// <param name="value"></param>
-    public static implicit operator Result<T>(T value)
-    {
-        return new Result<T>(value, true, new ErrorNone());
-    }
-
-    /// <summary>
-    /// Create implicit failure from an error
-    /// </summary>
-    /// <param name="error"></param>
-    public static implicit operator Result<T>(InformativeError error)
-    {
-        return new Result<T>(default!, false, error);
     }
 }
