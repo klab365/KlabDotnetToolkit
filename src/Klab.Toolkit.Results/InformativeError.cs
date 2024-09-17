@@ -28,9 +28,6 @@ public record InformativeError : IError
     /// </summary>
     public string StackTrace { get; set; } = string.Empty;
 
-    /// <inheritdoc/>
-    public bool ShouldQueue => true;
-
     /// <summary>
     /// Create a new Error
     /// </summary>

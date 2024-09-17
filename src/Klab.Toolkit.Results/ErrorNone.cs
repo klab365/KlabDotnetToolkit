@@ -20,9 +20,6 @@ public record ErrorNone : IError
     public string StackTrace => string.Empty;
 
     /// <inheritdoc/>
-    public bool ShouldQueue => false;
-
-    /// <inheritdoc/>
     public Task<bool> IsPendingAsyc()
     {
         return Task.FromResult(false);

@@ -10,6 +10,10 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.2.1
+
+* Remove unessesary classes, fields, etc.
+
 ## 2.2.0
 
 * Add functtionality to the eventbus to register local function as event handler
