@@ -1,24 +1,50 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Event;
 
 /// <summary>
 /// Basic implementation of <see cref="IEventBus"/>
-///
-/// It uses an <see cref="IEventQueue"/> to enqueue events
 /// </summary>
 internal sealed class EventBus : IEventBus
 {
-    private readonly IEventQueue _messageQueue;
+    public IEventQueue MessageQueue { get; }
+
+    public Dictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> LocalEventHandlers { get; } = new();
 
     public EventBus(IEventQueue messageQueue)
     {
-        _messageQueue = messageQueue;
+        MessageQueue = messageQueue;
     }
 
     public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
     {
-        await _messageQueue.EnqueueAsync(@event, cancellationToken);
+        await MessageQueue.EnqueueAsync(@event, cancellationToken);
+    }
+
+    public Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> handler) where TEvent : IEvent
+    {
+        if (!LocalEventHandlers.ContainsKey(typeof(TEvent)))
+        {
+            LocalEventHandlers.Add(typeof(TEvent), new());
+        }
+
+        Guid id = Guid.NewGuid();
+        LocalEventHandlers[typeof(TEvent)].Add(new(id, (@event, token) => handler((TEvent)@event, token)));
+        return Result.Success(id);
+    }
+
+    public Result Unsuscribe<TEvent>(Guid id) where TEvent : IEvent
+    {
+        if (!LocalEventHandlers.ContainsKey(typeof(TEvent)))
+        {
+            return Result.Success();
+        }
+
+        LocalEventHandlers[typeof(TEvent)].RemoveAll(x => x.Key == id);
+        return Result.Success();
     }
 }

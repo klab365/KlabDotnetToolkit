@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Klab.Toolkit.Event;
 
@@ -30,9 +30,13 @@ internal class EventHandlerMediator
     {
         return _eventHandlers.GetOrAdd(@event.GetType(), eventType =>
         {
-
             Type wrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(eventType);
-            object wrapper = _serviceProvider.GetRequiredService(wrapperType) ?? throw new InvalidOperationException($"Could not create wrapper for type {eventType}");
+            object? wrapper = _serviceProvider.GetService(wrapperType);
+            if (wrapper == null)
+            {
+                throw new KeyNotFoundException($"No event handler found for event type {eventType}");
+            }
+
             return (EventHandlerWrapper)wrapper;
         });
     }
