@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -16,32 +18,65 @@ namespace Klab.Toolkit.Event;
 /// </summary>
 internal sealed class EventProcesserJob : BackgroundService
 {
-    private readonly IEventQueue _messageQueue;
+    private readonly IEventBus _eventBus;
     private readonly EventHandlerMediator _eventHandlerMediator;
     private readonly ILogger<EventProcesserJob> _logger;
 
     public EventProcesserJob(
-        IEventQueue messageQueue,
+        IEventBus eventBus,
         EventHandlerMediator eventHandlerMediator,
         ILogger<EventProcesserJob> logger)
     {
-        _messageQueue = messageQueue;
+        _eventBus = eventBus;
         _eventHandlerMediator = eventHandlerMediator;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (IEvent @event in _messageQueue.DequeueAsync(stoppingToken))
+        await foreach (IEvent @event in _eventBus.MessageQueue.DequeueAsync(stoppingToken))
         {
             try
             {
-                await _eventHandlerMediator.PublishAsync(@event, stoppingToken);
+                await Task.WhenAll(
+                    ProcessHandlerClassesAsync(@event, stoppingToken),
+                    ProcessLocalFunctionsAsync(@event, stoppingToken)
+                );
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while processing the event {Event}", @event);
             }
         }
+    }
+
+    private async Task ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
+    {
+        try
+        {
+            await _eventHandlerMediator.PublishAsync(@event, stoppingToken);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogDebug(ex, "No event handler found for event type {EventType}", @event.GetType());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while processing the event {Event} with the handler classes", @event);
+        }
+    }
+
+    private async Task ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
+    {
+        if (!_eventBus.LocalEventHandlers.ContainsKey(@event.GetType()))
+        {
+            return;
+        }
+
+        IEnumerable<Task> tasks = _eventBus
+            .LocalEventHandlers[@event.GetType()]
+            .Select(handler => handler.Value(@event, stoppingToken));
+
+        await Task.WhenAll(tasks);
     }
 }
