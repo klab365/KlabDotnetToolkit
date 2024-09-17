@@ -29,11 +29,6 @@ public interface IError
     string StackTrace { get; }
 
     /// <summary>
-    /// Indicate if the error should be queued
-    /// </summary>
-    bool ShouldQueue { get; }
-
-    /// <summary>
     /// Check if the error is pending
     /// </summary>
     /// <returns></returns>
