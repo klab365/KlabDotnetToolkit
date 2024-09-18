@@ -12,31 +12,22 @@ namespace Klab.Toolkit.Event;
 /// </summary>
 internal abstract class EventHandlerWrapper
 {
-    public abstract Task Handle(
-        IEvent @event,
-        IServiceProvider serviceFactory,
-        Func<IEnumerable<EventHandlerExecutor>, IEvent, CancellationToken, Task> publish,
-        CancellationToken cancellationToken);
+    public abstract IEnumerable<EventHandlerExecutor> GetHandlers(IServiceProvider serviceProvider);
 }
 
 /// <summary>
 /// Generic event handler wrapper
 /// </summary>
 /// <typeparam name="TEvent"></typeparam>
-internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper
-    where TEvent : IEvent
+internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : IEvent
 {
-    public override Task Handle(
-        IEvent @event,
-        IServiceProvider serviceFactory,
-        Func<IEnumerable<EventHandlerExecutor>, IEvent, CancellationToken, Task> publish,
-        CancellationToken cancellationToken)
+    public override IEnumerable<EventHandlerExecutor> GetHandlers(IServiceProvider serviceProvider)
     {
-        IEnumerable<EventHandlerExecutor> handlers = serviceFactory
-            .GetServices<IEventHandler<TEvent>>()
-            .Select(static handler => new EventHandlerExecutor(handler, (e, ct) => handler.Handle((TEvent)e, ct)));
+        IEnumerable<EventHandlerExecutor> handlers = serviceProvider
+                .GetServices<IEventHandler<TEvent>>()
+                .Select(static handler => new EventHandlerExecutor(handler, (e, ct) => handler.Handle((TEvent)e, ct)));
 
-        return publish(handlers, @event, cancellationToken);
+        return handlers;
     }
 }
 

@@ -77,6 +77,7 @@ dotnet_diagnostic.IDE0008.severity = error
 dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.S125.severity = none
+dontet_diagnostic.S2094.severity = silent
 
 # Code files
 [*.{cs,csx,vb,vbx}]

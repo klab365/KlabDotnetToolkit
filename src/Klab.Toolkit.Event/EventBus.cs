@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,13 +12,20 @@ namespace Klab.Toolkit.Event;
 /// </summary>
 internal sealed class EventBus : IEventBus
 {
+    private readonly EventHandlerMediator _eventHandlerMediator;
+    private readonly ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> _localEventHandlers = new();
+
     public IEventQueue MessageQueue { get; }
 
-    public Dictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> LocalEventHandlers { get; } = new();
+    public ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> GetLocalEventHandlers()
+    {
+        return _localEventHandlers;
+    }
 
-    public EventBus(IEventQueue messageQueue)
+    public EventBus(IEventQueue messageQueue, EventHandlerMediator eventHandlerMediator)
     {
         MessageQueue = messageQueue;
+        _eventHandlerMediator = eventHandlerMediator;
     }
 
     public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
@@ -27,24 +35,36 @@ internal sealed class EventBus : IEventBus
 
     public Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> handler) where TEvent : IEvent
     {
-        if (!LocalEventHandlers.ContainsKey(typeof(TEvent)))
+        if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
-            LocalEventHandlers.Add(typeof(TEvent), new());
+            _localEventHandlers.TryAdd(typeof(TEvent), []);
         }
 
         Guid id = Guid.NewGuid();
-        LocalEventHandlers[typeof(TEvent)].Add(new(id, (@event, token) => handler((TEvent)@event, token)));
+        _localEventHandlers[typeof(TEvent)].Add(new(id, (@event, token) => handler((TEvent)@event, token)));
         return Result.Success(id);
     }
 
     public Result Unsuscribe<TEvent>(Guid id) where TEvent : IEvent
     {
-        if (!LocalEventHandlers.ContainsKey(typeof(TEvent)))
+        if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
-            return Result.Success();
+            return Result.Failure(new InformativeError(string.Empty, "No handler found for the event type"));
         }
 
-        LocalEventHandlers[typeof(TEvent)].RemoveAll(x => x.Key == id);
+        _localEventHandlers[typeof(TEvent)].RemoveAll(x => x.Key == id);
         return Result.Success();
+    }
+
+    public Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest
+        where TResponse : notnull
+    {
+        return _eventHandlerMediator.SendToHanderAsync<TRequest, TResponse>(request, cancellationToken);
+    }
+
+    public Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
+    {
+        return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
     }
 }

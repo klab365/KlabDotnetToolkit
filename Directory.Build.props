@@ -12,13 +12,14 @@
 
   <PropertyGroup Label="NuGet">
     <Authors>Burak Kizilkaya</Authors>
-    <Copyright>Copyright (C) 2023 klab</Copyright>
+    <Copyright>Copyright (C) 2024 klab</Copyright>
     <RepositoryUrl>https://github.com/BuriKizilkaya/KlabDotnetToolkit</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GenerateRepositoryUrlAttribute>true</GenerateRepositoryUrlAttribute>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -36,19 +37,10 @@
     <None Include="$(MSBuildProjectDirectory)/Readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
-  <!--Global packages-->
-  <ItemGroup>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.5.0.73987">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <!-- Global packages without Tests -->
   <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
   </ItemGroup>
-
 
   <!-- Test projects -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">

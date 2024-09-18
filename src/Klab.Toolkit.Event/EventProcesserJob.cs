@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -52,29 +53,22 @@ internal sealed class EventProcesserJob : BackgroundService
 
     private async Task ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
     {
-        try
+        Result res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
+        if (res.IsFailure && res.Error.Code != EventErrors.Keys.EventHandlerNotFoundKey) // Ignore EventHandlerNotFound error
         {
-            await _eventHandlerMediator.PublishAsync(@event, stoppingToken);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogDebug(ex, "No event handler found for event type {EventType}", @event.GetType());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while processing the event {Event} with the handler classes", @event);
+            _logger.LogError("An error occurred while processing the event '{Event}'. '{Error}'", @event, res.Error);
         }
     }
 
     private async Task ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
     {
-        if (!_eventBus.LocalEventHandlers.ContainsKey(@event.GetType()))
+        if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
         {
             return;
         }
 
         IEnumerable<Task> tasks = _eventBus
-            .LocalEventHandlers[@event.GetType()]
+            .GetLocalEventHandlers()[@event.GetType()]
             .Select(handler => handler.Value(@event, stoppingToken));
 
         await Task.WhenAll(tasks);

@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Klab.Toolkit.Results;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Klab.Toolkit.Event;
 
@@ -20,10 +22,35 @@ internal class EventHandlerMediator
         _serviceProvider = serviceProvider;
     }
 
-    public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
+    public async Task<Result> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
     {
-        EventHandlerWrapper eventHandler = GetEventHandler(@event);
-        await eventHandler.Handle(@event, _serviceProvider, TaskWhenAllPublisher.Publish, cancellationToken);
+        try
+        {
+            EventHandlerWrapper eventHandler = GetEventHandler(@event);
+            IEnumerable<EventHandlerExecutor> handlers = eventHandler.GetHandlers(_serviceProvider);
+            await TaskWhenAllPublisher.Publish(handlers, @event, cancellationToken);
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            InformativeError err = EventErrors.EventHandlerNotFound(@event.GetType());
+            err.StackTrace = ex.StackTrace;
+            return Result.Failure(err);
+        }
+    }
+
+    public async Task<Result<TResponse>> SendToHanderAsync<TRequest, TResponse>(IRequest request, CancellationToken cancellationToken)
+        where TRequest : IRequest
+        where TResponse : notnull
+    {
+        IRequestHandler<TRequest, TResponse> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
+        return await handler.HandleAsync((TRequest)request, cancellationToken);
+    }
+
+    public async Task<Result> SendToHanderAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest
+    {
+        IRequestHandler<TRequest> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest>>();
+        return await handler.HandleAsync(request, cancellationToken);
     }
 
     private EventHandlerWrapper GetEventHandler(IEvent @event)
