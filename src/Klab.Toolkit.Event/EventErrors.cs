@@ -1,0 +1,31 @@
+﻿using System;
+using Klab.Toolkit.Results;
+
+namespace Klab.Toolkit.Event;
+
+/// <summary>
+/// Event Errors
+/// </summary>
+public static class EventErrors
+{
+    /// <summary>
+    /// Keys
+    /// </summary>
+    public static class Keys
+    {
+        /// <summary>
+        /// Event Handler Not Found Key
+        /// </summary>
+        public const string EventHandlerNotFoundKey = "EventHandlerNotFound";
+    }
+
+    /// <summary>
+    /// Event Handler Not Found Error
+    /// </summary>
+    /// <param name="eventType"></param>
+    /// <returns></returns>
+    public static InformativeError EventHandlerNotFound(Type eventType) => new(
+        Keys.EventHandlerNotFoundKey,
+        message: $"No event handler found for event type {eventType}",
+        advice: "Make sure you registered the event handler in the DI container. If not desired, then ignore this message.");
+}

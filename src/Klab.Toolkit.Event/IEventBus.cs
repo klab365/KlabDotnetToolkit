@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ public interface IEventBus
     /// <summary>
     /// Getter property for the local event handlers
     /// </summary>
-    Dictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> LocalEventHandlers { get; }
+    ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> GetLocalEventHandlers();
 
     /// <summary>
     /// Publishes an event and not wait until event is processed.
@@ -45,4 +46,24 @@ public interface IEventBus
     /// <param name="id"></param>
     /// <returns></returns>
     Result Unsuscribe<TEvent>(Guid id) where TEvent : IEvent;
+
+    /// <summary>
+    /// Sends a request and waits for the response
+    /// </summary>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest
+        where TResponse : notnull;
+
+    /// <summary>
+    /// Sends a request and waits for the response
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest;
 }

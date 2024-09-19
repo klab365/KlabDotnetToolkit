@@ -75,6 +75,74 @@ public static class EventModule
 
         services.AddTransient<EventHandlerWrapper<TEvent>>();
     }
+
+    /// <summary>
+    /// Adds the request handler without response
+    /// </summary>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="THandler"></typeparam>
+    /// <param name="services"></param>
+    /// <param name="lifetime"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public static void AddRequestHandler<TRequest, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        where TRequest : IRequest
+        where THandler : class, IRequestHandler<TRequest>
+    {
+        if (lifetime == ServiceLifetime.Singleton)
+        {
+            services.AddSingleton<THandler>();
+            services.AddSingleton<IRequestHandler<TRequest>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else if (lifetime == ServiceLifetime.Scoped)
+        {
+            services.AddScoped<THandler>();
+            services.AddScoped<IRequestHandler<TRequest>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else if (lifetime == ServiceLifetime.Transient)
+        {
+            services.AddTransient<THandler>();
+            services.AddTransient<IRequestHandler<TRequest>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else
+        {
+            throw new ArgumentException("Invalid lifetime", nameof(lifetime));
+        }
+    }
+
+    /// <summary>
+    /// Adds the request handler with response
+    /// </summary>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResponse"></typeparam>
+    /// <typeparam name="THandler"></typeparam>
+    /// <param name="services"></param>
+    /// <param name="lifetime"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public static void AddRequestResponseHandler<TRequest, TResponse, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+        where TRequest : IRequest
+        where TResponse : notnull
+        where THandler : class, IRequestHandler<TRequest, TResponse>
+    {
+        if (lifetime == ServiceLifetime.Singleton)
+        {
+            services.AddSingleton<THandler>();
+            services.AddSingleton<IRequestHandler<TRequest, TResponse>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else if (lifetime == ServiceLifetime.Scoped)
+        {
+            services.AddScoped<THandler>();
+            services.AddScoped<IRequestHandler<TRequest, TResponse>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else if (lifetime == ServiceLifetime.Transient)
+        {
+            services.AddTransient<THandler>();
+            services.AddTransient<IRequestHandler<TRequest, TResponse>, THandler>(p => p.GetRequiredService<THandler>());
+        }
+        else
+        {
+            throw new ArgumentException("Invalid lifetime", nameof(lifetime));
+        }
+    }
 }
 
 /// <summary>
