@@ -11,7 +11,7 @@ public static class DependencyInjection
     /// Add all services to the service collection.
     /// </summary>
     /// <param name="services"></param>
-    public static IServiceCollection AddAll(IServiceCollection services)
+    public static IServiceCollection AddKlabToolkitCommon(IServiceCollection services)
     {
         services.AddRetryService();
         services.AddTimeProvider();

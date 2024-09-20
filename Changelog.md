@@ -10,7 +10,7 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
-## unreleased
+## 2.2.2
 
 * Add Send Functionality to the Eventbus
 
