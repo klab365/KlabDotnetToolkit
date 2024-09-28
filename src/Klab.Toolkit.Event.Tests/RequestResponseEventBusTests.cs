@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Klab.Toolkit.Event.InMemory;
 using Klab.Toolkit.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +20,7 @@ public class RequestResponseEventBusTests
             {
                 services.AddRequestHandler<PingRequest, PingRequestHandler>(ServiceLifetime.Singleton);
                 services.AddRequestResponseHandler<PingPongRequest, string, PingPongRequestHandler>();
-                services.AddEventModule(cfg => cfg.EventQueueType = typeof(InMemoryMessageQueue));
+                services.UseEventModule(cfg => cfg.EventQueueType = typeof(InMemoryMessageQueue));
             })
             .Build();
 

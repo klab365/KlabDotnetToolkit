@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Common;
 
@@ -11,5 +14,25 @@ public class TimeProvider : ITimeProvider
     public DateTimeOffset GetCurrentTime()
     {
         return new DateTimeOffset(DateTime.UtcNow);
+    }
+
+    /// <summary>
+    /// Wait for the specified time span.
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Result> WaitAsync(TimeSpan timeSpan, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await Task.Delay(timeSpan, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            return Result.Failure(new InformativeError(string.Empty, "Wait operation was canceled."));
+        }
+
+        return Result.Success();
     }
 }

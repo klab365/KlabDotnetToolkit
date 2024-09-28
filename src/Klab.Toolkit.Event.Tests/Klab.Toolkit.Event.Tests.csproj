@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <ProjectReference Include="..\Klab.Toolkit.Event\Klab.Toolkit.Event.csproj" />
-
-        <ProjectReference Include="..\Klab.Toolkit.Event.InMemory\Klab.Toolkit.Event.InMemory.csproj" />
     </ItemGroup>
 </Project>

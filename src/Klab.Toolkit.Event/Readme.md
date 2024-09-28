@@ -13,6 +13,7 @@ The primary purpose of the `Klab.Toolkit.Event` package is to facilitate event-d
 * Changebale Event Message Queue: The event message queue can be changed to any other implementation that implements the `IEventQueue` interface.
 * Event Subscription: To subscribe to an event, you can use the `EventBus.Subscribe` method, passing in the event type and a callback function or register a handler class that implements the `IEventHandler` interface.
 * Send Requests: The EventBus also provides a `Send` method that allows you to send an request to a handler and get a response back (like MediatR).
+* Default an In-Memory Event Queue: The default implementation of the event queue is an in-memory queue that stores events in memory. This implementation is suitable for most applications, but you can replace it with a custom implementation if needed.
 
 ## Example Usage
 

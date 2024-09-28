@@ -14,10 +14,10 @@ public static class EventModule
     /// <param name="services"></param>
     /// <param name="configure" />
     /// <returns></returns>
-    public static IServiceCollection AddEventModule(this IServiceCollection services, Action<EventModuleConfiguration> configure)
+    public static IServiceCollection UseEventModule(this IServiceCollection services, Action<EventModuleConfiguration>? configure)
     {
         EventModuleConfiguration configuration = new EventModuleConfiguration();
-        configure(configuration);
+        configure?.Invoke(configuration);
 
         RegisterEventQueue(services, configuration);
         services.AddSingleton<EventHandlerMediator>();
@@ -153,7 +153,7 @@ public class EventModuleConfiguration
     /// <summary>
     /// Gets or sets the event queue type
     /// </summary>
-    public Type? EventQueueType { get; set; }
+    public Type? EventQueueType { get; set; } = typeof(InMemoryMessageQueue);
 
     /// <summary>
     /// Gets or sets the event queue lifetime
