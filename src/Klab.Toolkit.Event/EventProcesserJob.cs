@@ -56,7 +56,7 @@ internal sealed class EventProcesserJob : BackgroundService
         Result res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
         if (res.IsFailure && res.Error.Code != EventErrors.Keys.EventHandlerNotFoundKey) // Ignore EventHandlerNotFound error
         {
-            _logger.LogError("An error occurred while processing the event '{Event}'. '{Error}'", @event, res.Error);
+            _logger.LogWarning("No event handler found for event {Event}", @event);
         }
     }
 

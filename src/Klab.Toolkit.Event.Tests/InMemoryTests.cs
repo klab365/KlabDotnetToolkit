@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Klab.Toolkit.Event.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -21,7 +20,7 @@ public class InMemoryTests
             {
                 services.AddEventSubsribtion<TestEvent, TestEventHandler1>(ServiceLifetime.Singleton);
                 services.AddEventSubsribtion<TestEvent, TestEventHandler2>(ServiceLifetime.Singleton);
-                services.AddEventModule(cfg =>
+                services.UseEventModule(cfg =>
                 {
                     cfg.EventQueueType = typeof(InMemoryMessageQueue);
                 });
