@@ -119,7 +119,7 @@ public static class EventModule
     /// <param name="lifetime"></param>
     /// <exception cref="ArgumentException"></exception>
     public static void AddRequestResponseHandler<TRequest, TResponse, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-        where TRequest : IRequest
+        where TRequest : IRequest<TResponse>
         where TResponse : notnull
         where THandler : class, IRequestHandler<TRequest, TResponse>
     {

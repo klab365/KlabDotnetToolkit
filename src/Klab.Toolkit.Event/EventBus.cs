@@ -57,13 +57,14 @@ internal sealed class EventBus : IEventBus
     }
 
     public Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest
+        where TRequest : IRequest<TResponse>
         where TResponse : notnull
     {
         return _eventHandlerMediator.SendToHanderAsync<TRequest, TResponse>(request, cancellationToken);
     }
 
-    public Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
+    public Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest
     {
         return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
     }
