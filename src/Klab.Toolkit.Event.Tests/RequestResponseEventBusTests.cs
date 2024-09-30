@@ -88,4 +88,4 @@ internal sealed class PingPongRequestHandler : IRequestHandler<PingPongRequest, 
     }
 }
 
-internal sealed record PingPongRequest(string Message) : IRequest;
+internal sealed record PingPongRequest(string Message) : IRequest<string>;

@@ -40,7 +40,7 @@ internal class EventHandlerMediator
     }
 
     public async Task<Result<TResponse>> SendToHanderAsync<TRequest, TResponse>(IRequest request, CancellationToken cancellationToken)
-        where TRequest : IRequest
+        where TRequest : IRequest<TResponse>
         where TResponse : notnull
     {
         IRequestHandler<TRequest, TResponse> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();

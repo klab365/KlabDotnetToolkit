@@ -10,6 +10,10 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.2.4
+
+* Make IRequest more compile time safe (better type checking)
+
 ## 2.2.3
 
 * Integrate InMemoryMessageQueue to the main Event Project

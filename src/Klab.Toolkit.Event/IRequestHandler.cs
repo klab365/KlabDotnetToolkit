@@ -8,7 +8,8 @@ namespace Klab.Toolkit.Event;
 /// Marker interface for request handlers
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
-public interface IRequestHandler<in TRequest> where TRequest : IRequest
+public interface IRequestHandler<in TRequest>
+    where TRequest : IRequest
 {
     /// <summary>
     /// Handle the request
@@ -24,7 +25,9 @@ public interface IRequestHandler<in TRequest> where TRequest : IRequest
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
 /// <typeparam name="TResponse"></typeparam>
-public interface IRequestHandler<in TRequest, TResponse> where TRequest : IRequest where TResponse : notnull
+public interface IRequestHandler<in TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+    where TResponse : notnull
 {
     /// <summary>
     /// Handle the request

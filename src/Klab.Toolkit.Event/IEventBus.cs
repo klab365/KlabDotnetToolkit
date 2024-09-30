@@ -56,7 +56,7 @@ public interface IEventBus
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest
+        where TRequest : IRequest<TResponse>
         where TResponse : notnull;
 
     /// <summary>
@@ -65,5 +65,6 @@ public interface IEventBus
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest;
+    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest;
 }
