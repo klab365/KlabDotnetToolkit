@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Klab.Toolkit.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -56,7 +57,7 @@ public class InMemoryTests
             Task.Run(async () => await _eventBus.PublishAsync(new TestEvent()));
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
-        await Task.Delay(1000); // wait for event to be processed
+        await Task.Delay(2000); // wait for event to be processed
 
         // assert
         _testEventHandler1.Counter.Should().Be(count);
@@ -74,10 +75,11 @@ internal sealed class TestEventHandler1 : IEventHandler<TestEvent>
 {
     public int Counter { get; private set; }
 
-    public Task Handle(TestEvent notification, CancellationToken cancellationToken)
+    public Task<IResult> Handle(TestEvent notification, CancellationToken cancellationToken)
     {
         Counter++;
-        return Task.CompletedTask;
+        IResult res = Result.Success();
+        return Task.FromResult(res);
     }
 }
 
@@ -85,9 +87,10 @@ internal sealed class TestEventHandler2 : IEventHandler<TestEvent>
 {
     public int Counter { get; private set; }
 
-    public Task Handle(TestEvent notification, CancellationToken cancellationToken)
+    public Task<IResult> Handle(TestEvent notification, CancellationToken cancellationToken)
     {
         Counter += 2;
-        return Task.CompletedTask;
+        IResult res = Result.Success();
+        return Task.FromResult(res);
     }
 }

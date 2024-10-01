@@ -39,10 +39,16 @@ internal sealed class EventProcesserJob : BackgroundService
         {
             try
             {
+                Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
+                Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
+
                 await Task.WhenAll(
-                    ProcessHandlerClassesAsync(@event, stoppingToken),
-                    ProcessLocalFunctionsAsync(@event, stoppingToken)
+                    task1,
+                    task2
                 );
+
+                List<IResult> res = [.. await task1, .. await task2];
+                LogResult(@event, res.ToArray());
             }
             catch (Exception ex)
             {
@@ -51,26 +57,40 @@ internal sealed class EventProcesserJob : BackgroundService
         }
     }
 
-    private async Task ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
+    private void LogResult(IEvent @event, IResult[] res)
     {
-        Result res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
-        if (res.IsFailure && res.Error.Code != EventErrors.Keys.EventHandlerNotFoundKey) // Ignore EventHandlerNotFound error
-        {
-            _logger.LogWarning("No event handler found for event {Event}", @event);
-        }
-    }
-
-    private async Task ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
-    {
-        if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
+        if (!res.Any(r => r.IsFailure))
         {
             return;
         }
 
-        IEnumerable<Task> tasks = _eventBus
+        foreach (IResult r in res)
+        {
+            if (r.IsFailure)
+            {
+                _logger.LogError("An error occurred while processing the event {Event}: {Error}", @event, r.Error);
+            }
+        }
+    }
+
+    private async Task<IResult[]> ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
+    {
+        IResult[] res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
+        return res;
+    }
+
+    private async Task<IResult[]> ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
+    {
+        if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
+        {
+            return Array.Empty<IResult>();
+        }
+
+        IEnumerable<Task<IResult>> tasks = _eventBus
             .GetLocalEventHandlers()[@event.GetType()]
             .Select(handler => handler.Value(@event, stoppingToken));
 
-        await Task.WhenAll(tasks);
+        IResult[] res = await Task.WhenAll(tasks);
+        return res;
     }
 }

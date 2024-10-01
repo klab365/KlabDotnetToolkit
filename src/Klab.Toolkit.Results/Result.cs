@@ -7,7 +7,7 @@ namespace Klab.Toolkit.Results;
 /// Additionally it contains a value which can be used to return the result of the operation
 /// and error messages if the operation failed.
 /// </summary>
-public class Result
+public record Result : IResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Result{T}"/> class.
@@ -77,7 +77,7 @@ public class Result
 /// Generic Result
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Result<T> : Result where T : notnull
+public record Result<T> : Result, IResult<T> where T : notnull
 {
     private readonly T _value;
 
