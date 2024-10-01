@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Klab.Toolkit.Event;
@@ -37,9 +38,9 @@ internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : 
 internal record EventHandlerExecutor
 {
     public object HandlerInstance { get; set; }
-    public Func<IEvent, CancellationToken, Task> HandlerCallback { get; set; }
+    public Func<IEvent, CancellationToken, Task<IResult>> HandlerCallback { get; set; }
 
-    public EventHandlerExecutor(object handlerInstance, Func<IEvent, CancellationToken, Task> handlerCallback)
+    public EventHandlerExecutor(object handlerInstance, Func<IEvent, CancellationToken, Task<IResult>> handlerCallback)
     {
         HandlerInstance = handlerInstance;
         HandlerCallback = handlerCallback;

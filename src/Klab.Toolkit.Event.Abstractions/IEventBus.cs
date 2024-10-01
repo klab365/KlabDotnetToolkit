@@ -20,7 +20,7 @@ public interface IEventBus
     /// <summary>
     /// Getter property for the local event handlers
     /// </summary>
-    ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> GetLocalEventHandlers();
+    ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task<IResult>>>>> GetLocalEventHandlers();
 
     /// <summary>
     /// Publishes an event and not wait until event is processed.
@@ -29,7 +29,7 @@ public interface IEventBus
     /// <param name="event"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent;
+    Task<Result> PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent;
 
     /// <summary>
     /// Subscribes to an event to a local function
@@ -37,7 +37,7 @@ public interface IEventBus
     /// <typeparam name="TEvent"></typeparam>
     /// <param name="handler"></param>
     /// <returns></returns>
-    Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> handler) where TEvent : IEvent;
+    Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<IResult>> handler) where TEvent : IEvent;
 
     /// <summary>
     /// Unsubscribes from an event
@@ -55,7 +55,7 @@ public interface IEventBus
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+    Task<IResult<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
         where TResponse : notnull;
 
@@ -65,6 +65,6 @@ public interface IEventBus
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+    Task<IResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest;
 }

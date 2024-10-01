@@ -5,6 +5,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />
+        <ProjectReference Include="..\Klab.Toolkit.Event.Abstractions\Klab.Toolkit.Event.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

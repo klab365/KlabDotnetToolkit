@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Event;
 
@@ -15,5 +16,5 @@ public interface IEventHandler<in TEvent> where TEvent : IEvent
     /// <param name="notification"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Handle(TEvent notification, CancellationToken cancellationToken);
+    Task<IResult> Handle(TEvent notification, CancellationToken cancellationToken);
 }

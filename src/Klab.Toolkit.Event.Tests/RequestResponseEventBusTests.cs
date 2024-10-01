@@ -34,7 +34,7 @@ public class RequestResponseEventBusTests
     {
         PingRequest req = new();
 
-        Result result = await _eventBus.SendAsync(req, CancellationToken.None);
+        IResult result = await _eventBus.SendAsync(req, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -44,7 +44,7 @@ public class RequestResponseEventBusTests
     {
         PingPongRequest req = new("Ping");
 
-        Result<string> result = await _eventBus.SendAsync<PingPongRequest, string>(req, CancellationToken.None);
+        IResult<string> result = await _eventBus.SendAsync<PingPongRequest, string>(req, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be("Ping Pong");

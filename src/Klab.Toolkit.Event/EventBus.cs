@@ -13,14 +13,9 @@ namespace Klab.Toolkit.Event;
 internal sealed class EventBus : IEventBus
 {
     private readonly EventHandlerMediator _eventHandlerMediator;
-    private readonly ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> _localEventHandlers = new();
+    private readonly ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task<IResult>>>>> _localEventHandlers = new();
 
     public IEventQueue MessageQueue { get; }
-
-    public ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task>>>> GetLocalEventHandlers()
-    {
-        return _localEventHandlers;
-    }
 
     public EventBus(IEventQueue messageQueue, EventHandlerMediator eventHandlerMediator)
     {
@@ -28,12 +23,18 @@ internal sealed class EventBus : IEventBus
         _eventHandlerMediator = eventHandlerMediator;
     }
 
-    public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
+    public ConcurrentDictionary<Type, List<KeyValuePair<Guid, Func<IEvent, CancellationToken, Task<IResult>>>>> GetLocalEventHandlers()
     {
-        await MessageQueue.EnqueueAsync(@event, cancellationToken);
+        return _localEventHandlers;
     }
 
-    public Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task> handler) where TEvent : IEvent
+    public async Task<Result> PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
+    {
+        await MessageQueue.EnqueueAsync(@event, cancellationToken);
+        return Result.Success();
+    }
+
+    public Result<Guid> Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<IResult>> handler) where TEvent : IEvent
     {
         if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
@@ -56,14 +57,14 @@ internal sealed class EventBus : IEventBus
         return Result.Success();
     }
 
-    public Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+    public Task<IResult<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
         where TResponse : notnull
     {
         return _eventHandlerMediator.SendToHanderAsync<TRequest, TResponse>(request, cancellationToken);
     }
 
-    public Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+    public Task<IResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest
     {
         return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);

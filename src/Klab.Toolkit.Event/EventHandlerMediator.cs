@@ -16,30 +16,31 @@ internal class EventHandlerMediator
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ConcurrentDictionary<Type, EventHandlerWrapper> _eventHandlers = new();
+    private readonly IEventHandlerProcessingStrategy _eventProcessingStrategy;
 
     public EventHandlerMediator(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        _eventProcessingStrategy = serviceProvider.GetRequiredService<IEventHandlerProcessingStrategy>();
     }
 
-    public async Task<Result> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
+    public async Task<IResult[]> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
     {
         try
         {
             EventHandlerWrapper eventHandler = GetEventHandler(@event);
             IEnumerable<EventHandlerExecutor> handlers = eventHandler.GetHandlers(_serviceProvider);
-            await TaskWhenAllPublisher.Publish(handlers, @event, cancellationToken);
-            return Result.Success();
+            return await _eventProcessingStrategy.Handle(handlers, @event, cancellationToken);
         }
         catch (Exception ex)
         {
             InformativeError err = EventErrors.EventHandlerNotFound(@event.GetType());
             err.StackTrace = ex.StackTrace;
-            return Result.Failure(err);
+            return [Result.Failure(err)];
         }
     }
 
-    public async Task<Result<TResponse>> SendToHanderAsync<TRequest, TResponse>(IRequest request, CancellationToken cancellationToken)
+    public async Task<IResult<TResponse>> SendToHanderAsync<TRequest, TResponse>(IRequest request, CancellationToken cancellationToken)
         where TRequest : IRequest<TResponse>
         where TResponse : notnull
     {
@@ -47,7 +48,7 @@ internal class EventHandlerMediator
         return await handler.HandleAsync((TRequest)request, cancellationToken);
     }
 
-    public async Task<Result> SendToHanderAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest
+    public async Task<IResult> SendToHanderAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest
     {
         IRequestHandler<TRequest> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest>>();
         return await handler.HandleAsync(request, cancellationToken);

@@ -66,9 +66,10 @@ public class LocalFunctionEventBusTests
         _counter.Should().Be(1);
     }
 
-    private async Task IncreaseCounterAsync(TestEvent @event, CancellationToken cancellationToken)
+    private Task<IResult> IncreaseCounterAsync(TestEvent @event, CancellationToken cancellationToken)
     {
         _counter++;
-        await Task.CompletedTask;
+        IResult res = Result.Success();
+        return Task.FromResult(res);
     }
 }
