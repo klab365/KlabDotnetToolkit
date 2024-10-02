@@ -10,6 +10,11 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.4.0
+
+* Add StreamRequest to the EventBus
+* Remove unessesary function calls of the eventbus
+
 ## 2.3.0
 
 * Split Event Module to Abstractions and Implementation

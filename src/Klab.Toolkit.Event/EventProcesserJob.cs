@@ -83,7 +83,7 @@ internal sealed class EventProcesserJob : BackgroundService
     {
         if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
         {
-            return Array.Empty<IResult>();
+            return [];
         }
 
         IEnumerable<Task<IResult>> tasks = _eventBus

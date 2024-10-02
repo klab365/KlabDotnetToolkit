@@ -17,6 +17,11 @@ public static class EventErrors
         /// Event Handler Not Found Key
         /// </summary>
         public const string EventHandlerNotFoundKey = "EventHandlerNotFound";
+
+        /// <summary>
+        /// Generic Event Error Key
+        /// </summary>
+        public const string GenericEventErrorKey = "GenericEventError";
     }
 
     /// <summary>

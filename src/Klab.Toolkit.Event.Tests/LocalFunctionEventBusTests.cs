@@ -18,10 +18,7 @@ public class LocalFunctionEventBusTests
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.UseEventModule(cfg =>
-                {
-                    cfg.EventQueueType = typeof(InMemoryMessageQueue);
-                });
+                services.UseEventModule();
             })
             .Build();
 

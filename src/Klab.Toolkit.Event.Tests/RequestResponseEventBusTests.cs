@@ -18,9 +18,9 @@ public class RequestResponseEventBusTests
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.AddRequestHandler<PingRequest, PingRequestHandler>(ServiceLifetime.Singleton);
-                services.AddRequestResponseHandler<PingPongRequest, string, PingPongRequestHandler>();
-                services.UseEventModule(cfg => cfg.EventQueueType = typeof(InMemoryMessageQueue));
+                services.AddRequestResponseHandler<PingRequest, Result, PingRequestHandler>(ServiceLifetime.Singleton);
+                services.AddRequestResponseHandler<PingPongRequest, Result<string>, PingPongRequestHandler>();
+                services.UseEventModule();
             })
             .Build();
 
@@ -34,7 +34,7 @@ public class RequestResponseEventBusTests
     {
         PingRequest req = new();
 
-        IResult result = await _eventBus.SendAsync(req, CancellationToken.None);
+        Result result = await _eventBus.SendAsync(req, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
     }
@@ -44,7 +44,7 @@ public class RequestResponseEventBusTests
     {
         PingPongRequest req = new("Ping");
 
-        IResult<string> result = await _eventBus.SendAsync<PingPongRequest, string>(req, CancellationToken.None);
+        Result<string> result = await _eventBus.SendAsync(req, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be("Ping Pong");
@@ -67,7 +67,7 @@ public class RequestResponseEventBusTests
     }
 }
 
-internal sealed class PingRequestHandler : IRequestHandler<PingRequest>
+internal sealed class PingRequestHandler : IRequestHandler<PingRequest, Result>
 {
     public int Counter { get; set; }
 
@@ -78,9 +78,9 @@ internal sealed class PingRequestHandler : IRequestHandler<PingRequest>
     }
 }
 
-internal sealed record PingRequest : IRequest;
+internal sealed record PingRequest : IRequest<Result>;
 
-internal sealed class PingPongRequestHandler : IRequestHandler<PingPongRequest, string>
+internal sealed class PingPongRequestHandler : IRequestHandler<PingPongRequest, Result<string>>
 {
     public Task<Result<string>> HandleAsync(PingPongRequest request, CancellationToken cancellationToken)
     {
@@ -88,4 +88,4 @@ internal sealed class PingPongRequestHandler : IRequestHandler<PingPongRequest, 
     }
 }
 
-internal sealed record PingPongRequest(string Message) : IRequest<string>;
+internal sealed record PingPongRequest(string Message) : IRequest<Result<string>>;

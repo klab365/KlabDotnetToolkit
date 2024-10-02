@@ -21,10 +21,7 @@ public class InMemoryTests
             {
                 services.AddEventSubsribtion<TestEvent, TestEventHandler1>(ServiceLifetime.Singleton);
                 services.AddEventSubsribtion<TestEvent, TestEventHandler2>(ServiceLifetime.Singleton);
-                services.UseEventModule(cfg =>
-                {
-                    cfg.EventQueueType = typeof(InMemoryMessageQueue);
-                });
+                services.UseEventModule();
             })
             .Build();
 
