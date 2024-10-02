@@ -57,16 +57,14 @@ internal sealed class EventBus : IEventBus
         return Result.Success();
     }
 
-    public Task<IResult<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest<TResponse>
+    public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         where TResponse : notnull
     {
-        return _eventHandlerMediator.SendToHanderAsync<TRequest, TResponse>(request, cancellationToken);
+        return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
     }
 
-    public Task<IResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest
+    public IAsyncEnumerable<TResponse> Stream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default) where TResponse : notnull
     {
-        return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
+        return _eventHandlerMediator.SendToStreamHandlerAsync(request, cancellationToken);
     }
 }

@@ -26,7 +26,7 @@ public interface IError
     /// <summary>
     /// StackTrace (optional)
     /// </summary>
-    string StackTrace { get; }
+    string? StackTrace { get; }
 
     /// <summary>
     /// Check if the error is pending

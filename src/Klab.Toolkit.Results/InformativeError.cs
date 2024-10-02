@@ -26,7 +26,7 @@ public record InformativeError : IError
     /// <summary>
     /// StackTrace
     /// </summary>
-    public string StackTrace { get; set; } = string.Empty;
+    public string? StackTrace { get; }
 
     /// <summary>
     /// Create a new Error

@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+        <InternalsVisibleTo Include="Klab.Toolkit.Event" />
+    </ItemGroup>
 
   <ItemGroup>
         <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />

@@ -11,6 +11,6 @@ public interface IRequest
 /// Marker interface for requests with response
 /// </summary>
 /// <typeparam name="TResponse"></typeparam>
-public interface IRequest<out TResponse> : IRequest where TResponse : notnull
+public interface IRequest<out TResponse>
 {
 }

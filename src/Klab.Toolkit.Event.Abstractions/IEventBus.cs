@@ -50,21 +50,20 @@ public interface IEventBus
     /// <summary>
     /// Sends a request and waits for the response
     /// </summary>
-    /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IResult<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest<TResponse>
+    Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         where TResponse : notnull;
 
     /// <summary>
-    /// Sends a request and waits for the response
+    /// Streams a request and returns an async enumerable
     /// </summary>
+    /// <typeparam name="TResponse"></typeparam>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IResult> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest;
+    IAsyncEnumerable<TResponse> Stream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
+        where TResponse : notnull;
 }

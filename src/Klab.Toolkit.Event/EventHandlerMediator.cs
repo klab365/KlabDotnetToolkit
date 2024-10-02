@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Klab.Toolkit.Results;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Klab.Toolkit.Event;
 
@@ -15,12 +17,16 @@ namespace Klab.Toolkit.Event;
 internal class EventHandlerMediator
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<EventHandlerMediator> _logger;
     private readonly ConcurrentDictionary<Type, EventHandlerWrapper> _eventHandlers = new();
+    private readonly ConcurrentDictionary<Type, RequestResponseHandlerWrapper> _requestHandlers = new();
+    private readonly ConcurrentDictionary<Type, StreamRequestResponseHandlerWrapper> _streamRequestHandlers = new();
     private readonly IEventHandlerProcessingStrategy _eventProcessingStrategy;
 
-    public EventHandlerMediator(IServiceProvider serviceProvider)
+    public EventHandlerMediator(IServiceProvider serviceProvider, ILogger<EventHandlerMediator> logger)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
         _eventProcessingStrategy = serviceProvider.GetRequiredService<IEventHandlerProcessingStrategy>();
     }
 
@@ -28,44 +34,79 @@ internal class EventHandlerMediator
     {
         try
         {
-            EventHandlerWrapper eventHandler = GetEventHandler(@event);
+            EventHandlerWrapper? eventHandler = GetEventHandler(@event);
+            if (eventHandler is null)
+            {
+                _logger.LogDebug("No event handler found for event type {EventType}", @event.GetType());
+                return [];
+            }
+
             IEnumerable<EventHandlerExecutor> handlers = eventHandler.GetHandlers(_serviceProvider);
             return await _eventProcessingStrategy.Handle(handlers, @event, cancellationToken);
         }
         catch (Exception ex)
         {
-            InformativeError err = EventErrors.EventHandlerNotFound(@event.GetType());
-            err.StackTrace = ex.StackTrace;
+            InformativeError err = InformativeError.FromException(EventErrors.Keys.GenericEventErrorKey, ex);
             return [Result.Failure(err)];
         }
     }
 
-    public async Task<IResult<TResponse>> SendToHanderAsync<TRequest, TResponse>(IRequest request, CancellationToken cancellationToken)
-        where TRequest : IRequest<TResponse>
+    public async Task<TResponse> SendToHanderAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
         where TResponse : notnull
     {
-        IRequestHandler<TRequest, TResponse> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
-        return await handler.HandleAsync((TRequest)request, cancellationToken);
+        RequestResponseHandlerWrapper requestHandler = GetRequestHandlerWrapper(request);
+        return (TResponse)await requestHandler.HandleAsync(request, _serviceProvider, cancellationToken);
     }
 
-    public async Task<IResult> SendToHanderAsync<TRequest>(TRequest request, CancellationToken cancellationToken) where TRequest : IRequest
+    public async IAsyncEnumerable<TResponse> SendToStreamHandlerAsync<TResponse>(IStreamRequest<TResponse> request, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        IRequestHandler<TRequest> handler = _serviceProvider.GetRequiredService<IRequestHandler<TRequest>>();
-        return await handler.HandleAsync(request, cancellationToken);
+        StreamRequestResponseHandlerWrapper requestHandler = GetStreamRequestHandlerWrapper(request);
+
+        await foreach (TResponse item in requestHandler.HandleAsync(request, _serviceProvider, cancellationToken))
+        {
+            yield return item;
+        }
     }
 
-    private EventHandlerWrapper GetEventHandler(IEvent @event)
+    private EventHandlerWrapper? GetEventHandler(IEvent @event)
     {
-        return _eventHandlers.GetOrAdd(@event.GetType(), eventType =>
+        EventHandlerWrapper? res = _eventHandlers.GetOrAdd(@event.GetType(), eventType =>
         {
             Type wrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(eventType);
             object? wrapper = _serviceProvider.GetService(wrapperType);
+            return (EventHandlerWrapper)wrapper;
+        });
+
+        return res;
+    }
+
+    private RequestResponseHandlerWrapper GetRequestHandlerWrapper<TResponse>(IRequest<TResponse> request)
+    {
+        return _requestHandlers.GetOrAdd(request.GetType(), requestType =>
+        {
+            Type wrapperType = typeof(RequestResponseHandlerWrapper<,>).MakeGenericType(requestType, typeof(TResponse));
+            object? wrapper = _serviceProvider.GetService(wrapperType);
             if (wrapper == null)
             {
-                throw new KeyNotFoundException($"No event handler found for event type {eventType}");
+                throw new KeyNotFoundException($"No request handler found for request type {requestType}");
             }
 
-            return (EventHandlerWrapper)wrapper;
+            return (RequestResponseHandlerWrapper)wrapper;
+        });
+    }
+
+    private StreamRequestResponseHandlerWrapper GetStreamRequestHandlerWrapper<TResponse>(IStreamRequest<TResponse> request)
+    {
+        return _streamRequestHandlers.GetOrAdd(request.GetType(), requestType =>
+        {
+            Type wrapperType = typeof(StreamRequestResponseHandlerWrapper<,>).MakeGenericType(requestType, typeof(TResponse));
+            object? wrapper = _serviceProvider.GetService(wrapperType);
+            if (wrapper == null)
+            {
+                throw new KeyNotFoundException($"No stream request handler found for request type {requestType}");
+            }
+
+            return (StreamRequestResponseHandlerWrapper)wrapper;
         });
     }
 }

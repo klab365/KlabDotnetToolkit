@@ -17,7 +17,9 @@
 				"ms-dotnettools.csdevkit",
 				"skellock.just",
 				"github.copilot",
-				"ms-vscode.test-adapter-converter"
+				"ms-vscode.test-adapter-converter",
+				"mhutchie.git-graph",
+				"eamodio.gitlens"
 			]
 		}
 	}
