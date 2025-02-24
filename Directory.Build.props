@@ -12,7 +12,7 @@
 
   <PropertyGroup Label="NuGet">
     <Authors>Burak Kizilkaya</Authors>
-    <Copyright>Copyright (C) 2024 klab</Copyright>
+    <Copyright>Copyright (C) 2025 klab</Copyright>
     <RepositoryUrl>https://github.com/BuriKizilkaya/KlabDotnetToolkit</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -65,7 +65,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>

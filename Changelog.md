@@ -10,6 +10,11 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.5.0
+
+* Changed
+  * Process Events in the EventBus in a separate task to avoid blocking processing of events
+
 ## 2.4.1
 
 * Remove simple IRequest and IRequestHandler. Every Request must contain a response.

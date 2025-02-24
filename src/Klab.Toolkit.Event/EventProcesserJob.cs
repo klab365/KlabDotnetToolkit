@@ -37,23 +37,27 @@ internal sealed class EventProcesserJob : BackgroundService
     {
         await foreach (IEvent @event in _eventBus.MessageQueue.DequeueAsync(stoppingToken))
         {
-            try
+            Task task = new(async () =>
             {
-                Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
-                Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
+                try
+                {
+                    Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
+                    Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
 
-                await Task.WhenAll(
-                    task1,
-                    task2
-                );
+                    await Task.WhenAll(
+                        task1,
+                        task2
+                    );
 
-                List<IResult> res = [.. await task1, .. await task2];
-                LogResult(@event, res.ToArray());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while processing the event {Event}", @event);
-            }
+                    List<IResult> res = [.. await task1, .. await task2];
+                    LogResult(@event, res.ToArray());
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while processing the event {Event}", @event);
+                }
+            }, stoppingToken);
+            task.Start();
         }
     }
 

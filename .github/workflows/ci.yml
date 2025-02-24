@@ -9,32 +9,26 @@ on:
 jobs:
   format:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:9.0
 
     steps:
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "8.0.x"
+      - name: Check out code
+        uses: actions/checkout@v2
 
       - name: Install dotnet-format tool
         run: dotnet tool install -g dotnet-format
-
-      - name: Check out code
-        uses: actions/checkout@v2
 
       - name: Run dotnet format
         run: dotnet format --verify-no-changes -v diag
 
   build-and-test:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:9.0
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "8.0.x"
 
       - name: Restore dependencies
         run: dotnet restore
