@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Klab.Toolkit.Results;
@@ -19,8 +18,8 @@ public class InMemoryTests
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.AddEventSubsribtion<TestEvent, TestEventHandler1>(ServiceLifetime.Singleton);
-                services.AddEventSubsribtion<TestEvent, TestEventHandler2>(ServiceLifetime.Singleton);
+                services.AddEventSubsribtion<TestEvent1, TestEventHandler1>(ServiceLifetime.Singleton);
+                services.AddEventSubsribtion<TestEvent1, TestEventHandler2>(ServiceLifetime.Singleton);
                 services.UseEventModule();
             })
             .Build();
@@ -35,7 +34,7 @@ public class InMemoryTests
     public async Task SimpleEventPublishTest()
     {
         // arrange & act
-        await _eventBus.PublishAsync(new TestEvent());
+        await _eventBus.PublishAsync(new TestEvent1());
         await Task.Delay(1000); // wait for event to be processed
 
         // assert
@@ -51,7 +50,7 @@ public class InMemoryTests
         for (int i = 0; i < count; i++)
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Task.Run(async () => await _eventBus.PublishAsync(new TestEvent()));
+            Task.Run(async () => await _eventBus.PublishAsync(new TestEvent1()));
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
         await Task.Delay(2000); // wait for event to be processed
@@ -62,31 +61,34 @@ public class InMemoryTests
     }
 }
 
-
-internal sealed record TestEvent : IEvent
+internal sealed class TestEventHandler1 : IEventHandler<TestEvent1>
 {
-    public Guid Id { get; } = Guid.NewGuid();
-}
-
-internal sealed class TestEventHandler1 : IEventHandler<TestEvent>
-{
+    private readonly object _lock = new();
     public int Counter { get; private set; }
 
-    public Task<IResult> Handle(TestEvent notification, CancellationToken cancellationToken)
+    public Task<IResult> Handle(TestEvent1 notification, CancellationToken cancellationToken)
     {
-        Counter++;
+        lock (_lock)
+        {
+            Counter++;
+        }
         IResult res = Result.Success();
         return Task.FromResult(res);
     }
 }
 
-internal sealed class TestEventHandler2 : IEventHandler<TestEvent>
+internal sealed class TestEventHandler2 : IEventHandler<TestEvent1>
 {
+    private readonly object _lock = new();
+
     public int Counter { get; private set; }
 
-    public Task<IResult> Handle(TestEvent notification, CancellationToken cancellationToken)
+    public Task<IResult> Handle(TestEvent1 notification, CancellationToken cancellationToken)
     {
-        Counter += 2;
+        lock (_lock)
+        {
+            Counter += 2;
+        }
         IResult res = Result.Success();
         return Task.FromResult(res);
     }
