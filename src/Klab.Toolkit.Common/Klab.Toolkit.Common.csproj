@@ -2,4 +2,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />
   </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Threading.Channels" Version="$(MicrosoftPackageVersion)" />
+    </ItemGroup>
 </Project>

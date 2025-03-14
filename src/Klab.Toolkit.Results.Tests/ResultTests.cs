@@ -24,7 +24,7 @@ public class ResultTests
     [TestMethod]
     public void FailureTest()
     {
-        Result result = Result.Failure(new InformativeError("0", "test error", ""));
+        Result result = Result.Failure(Error.Create("0", "test error", ""));
 
         result.Error.Message.Should().Be("test error");
         result.IsSuccess.Should().Be(false);
@@ -33,7 +33,7 @@ public class ResultTests
     [TestMethod]
     public void FailureTest_WithClass()
     {
-        Result result = Result.Failure(new InformativeError("1", "error"));
+        Result result = Result.Failure(Error.Create("1", "error"));
 
         result.Error.Message.Should().Be("error");
         result.IsSuccess.Should().Be(false);
@@ -42,7 +42,7 @@ public class ResultTests
     [TestMethod]
     public void FailureTest_Generic()
     {
-        Result<string> res = Result.Failure<string>(new InformativeError("1", "error"));
+        Result<string> res = Result.Failure<string>(Error.Create("1", "error"));
 
         res.IsFailure.Should().BeTrue();
         res.Error.Message.Should().Be("error");

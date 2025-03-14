@@ -3,14 +3,17 @@
 {
 	"name": "KlabDotnetToolkit DevContainer",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/dotnet:1-9.0",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:9.0",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
 		"ghcr.io/guiyomh/features/just:0": {}
 	},
-  "runArgs": [
-    "--rm"
-  ],
+	"mounts": [
+		"source=${localWorkspaceFolder}/.gitconfig,destination=/home/vscode/.gitconfig,type=bind,consistency=cached",
+	],
+	"runArgs": [
+		"--rm"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [

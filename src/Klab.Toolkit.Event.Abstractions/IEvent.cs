@@ -11,4 +11,9 @@ public interface IEvent
     /// Id of the event
     /// </summary>
     Guid Id { get; }
+
+    /// <summary>
+    /// Time of the event creation
+    /// </summary>
+    DateTimeOffset CreatedAt { get; }
 }

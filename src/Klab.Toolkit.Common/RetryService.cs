@@ -26,7 +26,7 @@ public class RetryService : IRetryService
             }
             catch (Exception e)
             {
-                InformativeError error = InformativeError.FromException("RetryService", e);
+                Error error = Error.FromException("RetryService", ErrorType.Warning, e);
                 result = Result.Failure(error);
             }
 

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Klab.Toolkit.Results;
@@ -22,59 +25,87 @@ internal sealed class EventProcesserJob : BackgroundService
     private readonly IEventBus _eventBus;
     private readonly EventHandlerMediator _eventHandlerMediator;
     private readonly ILogger<EventProcesserJob> _logger;
+    private readonly EventModuleConfiguration _eventModuleConfiguration;
+    private readonly List<object> _eventLogs = new();
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public EventProcesserJob(
         IEventBus eventBus,
         EventHandlerMediator eventHandlerMediator,
-        ILogger<EventProcesserJob> logger)
+        ILogger<EventProcesserJob> logger,
+        EventModuleConfiguration eventModuleConfiguration)
     {
         _eventBus = eventBus;
         _eventHandlerMediator = eventHandlerMediator;
         _logger = logger;
+        _eventModuleConfiguration = eventModuleConfiguration;
+        _jsonSerializerOptions = new()
+        {
+            WriteIndented = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() }, // Useful if you have enums
+            PropertyNameCaseInsensitive = true,
+        };
+        _jsonSerializerOptions.Converters.Add(new EventInterfaceJsonConverter());
     }
 
+    /// <summary>
+    /// This method will process events sequentially from the event queue.
+    /// </summary>
+    /// <param name="stoppingToken"></param>
+    /// <returns></returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await foreach (IEvent @event in _eventBus.MessageQueue.DequeueAsync(stoppingToken))
         {
-            Task task = new(async () =>
+            try
             {
-                try
-                {
-                    Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
-                    Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
+                Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
+                Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
 
-                    await Task.WhenAll(
-                        task1,
-                        task2
-                    );
+                await Task.WhenAll(
+                    task1,
+                    task2
+                );
 
-                    List<IResult> res = [.. await task1, .. await task2];
-                    LogResult(@event, res.ToArray());
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while processing the event {Event}", @event);
-                }
-            }, stoppingToken);
-            task.Start();
+                List<IResult> res = [.. await task1, .. await task2];
+                LogResult(@event, res.ToArray());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the event {Event}", @event);
+            }
         }
     }
 
     private void LogResult(IEvent @event, IResult[] res)
     {
-        if (!res.Any(r => r.IsFailure))
+        if (!_eventModuleConfiguration.ShouldLogEvents)
         {
             return;
         }
 
-        foreach (IResult r in res)
+        object eventLog = new {
+            Event = @event,
+            Results = GenerateResultLogs(res)
+        };
+        _eventLogs.Add(eventLog);
+        string jsonLog = JsonSerializer.Serialize(_eventLogs, _jsonSerializerOptions);
+        File.WriteAllText(_eventModuleConfiguration.EventLogFilePath, jsonLog);
+    }
+
+    private static IEnumerable<object> GenerateResultLogs(IResult[] res)
+    {
+        if (res.All(r => r.IsSuccess))
         {
-            if (r.IsFailure)
-            {
-                _logger.LogError("An error occurred while processing the event {Event}: {Error}", @event, r.Error);
-            }
+            return [];
         }
+
+        IEnumerable<object> failedResults = res
+            .Where(r => !r.IsSuccess)
+            .Select(r => new { r.Error });
+
+        return failedResults;
     }
 
     private async Task<IResult[]> ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)

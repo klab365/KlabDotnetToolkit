@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Klab.Toolkit.Results;
@@ -42,6 +43,11 @@ internal sealed class EventBus : IEventBus
         }
 
         int handlerHash = CalculateHashOfHandler(handler);
+        if (_localEventHandlers[typeof(TEvent)].Any(x => x.Key == handlerHash))
+        {
+            return Result.Failure(Error.Create(string.Empty, "Handler already exists"));
+        }
+
         _localEventHandlers[typeof(TEvent)].Add(new(handlerHash, (@event, token) => handler((TEvent)@event, token)));
         return Result.Success();
     }
@@ -50,7 +56,7 @@ internal sealed class EventBus : IEventBus
     {
         if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
-            return Result.Failure(new InformativeError(string.Empty, "No handler found for the event type"));
+            return Result.Failure(Error.Create(string.Empty, "No handler found for the event type"));
         }
 
         int handlerHash = CalculateHashOfHandler(handler);
@@ -68,7 +74,6 @@ internal sealed class EventBus : IEventBus
     {
         return _eventHandlerMediator.SendToStreamHandlerAsync(request, cancellationToken);
     }
-
 
     private static int CalculateHashOfHandler<TEvent>(Func<TEvent, CancellationToken, Task<IResult>> handler) where TEvent : IEvent
     {
