@@ -33,13 +33,23 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <MicrosoftPackageVersion>9.0.2</MicrosoftPackageVersion>
+  </PropertyGroup>
+
   <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
     <None Include="$(MSBuildProjectDirectory)/Readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <!-- Global packages without Tests -->
   <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftPackageVersion)" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <!-- Test projects -->

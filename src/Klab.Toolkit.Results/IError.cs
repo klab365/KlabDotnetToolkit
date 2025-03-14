@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Klab.Toolkit.Results;
+﻿namespace Klab.Toolkit.Results;
 
 
 /// <summary>
@@ -8,6 +6,11 @@ namespace Klab.Toolkit.Results;
 /// </summary>
 public interface IError
 {
+    /// <summary>
+    /// Type of the error
+    /// </summary>
+    ErrorType Type { get; }
+
     /// <summary>
     /// Error code
     /// </summary>
@@ -27,10 +30,4 @@ public interface IError
     /// StackTrace (optional)
     /// </summary>
     string? StackTrace { get; }
-
-    /// <summary>
-    /// Check if the error is pending
-    /// </summary>
-    /// <returns></returns>
-    Task<bool> IsPendingAsyc();
 }

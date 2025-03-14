@@ -46,7 +46,7 @@ internal class EventHandlerMediator
         }
         catch (Exception ex)
         {
-            InformativeError err = InformativeError.FromException(EventErrors.Keys.GenericEventErrorKey, ex);
+            Error err = Error.FromException(EventErrors.Keys.GenericEventErrorKey, ErrorType.Error, ex);
             return [Result.Failure(err)];
         }
     }

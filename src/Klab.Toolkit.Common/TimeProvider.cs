@@ -30,7 +30,7 @@ public class TimeProvider : ITimeProvider
         }
         catch (TaskCanceledException)
         {
-            return Result.Failure(new InformativeError(string.Empty, "Wait operation was canceled."));
+            return Result.Failure(Error.Create(string.Empty, "Wait operation was canceled."));
         }
 
         return Result.Success();

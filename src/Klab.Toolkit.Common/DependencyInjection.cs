@@ -15,6 +15,7 @@ public static class DependencyInjection
     {
         services.AddRetryService();
         services.AddTimeProvider();
+        services.AddTransient<ITaskProvider, TaskProvider>();
         return services;
     }
 

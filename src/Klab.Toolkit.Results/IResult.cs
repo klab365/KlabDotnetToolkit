@@ -25,7 +25,7 @@ public interface IResult
 /// Interface for a result of an operation with a value
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IResult<T> : IResult where T : notnull
+public interface IResult<out T> : IResult where T : notnull
 {
     /// <summary>
     /// Gets the value of the result

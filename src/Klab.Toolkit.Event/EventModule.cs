@@ -18,6 +18,7 @@ public static class EventModule
     {
         EventModuleConfiguration configuration = new EventModuleConfiguration();
         configure?.Invoke(configuration);
+        services.AddSingleton(configuration);
 
         RegisterEventQueue(services, configuration);
         services.AddSingleton<EventHandlerMediator>();
@@ -60,4 +61,14 @@ public class EventModuleConfiguration
     /// Gets or sets the event queue lifetime
     /// </summary>
     public ServiceLifetime EventQueueLifetime { get; set; } = ServiceLifetime.Singleton;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to log events
+    /// </summary>
+    public bool ShouldLogEvents { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the event log file path
+    /// </summary>
+    public string EventLogFilePath { get; set; } = "event-logs.json";
 }
