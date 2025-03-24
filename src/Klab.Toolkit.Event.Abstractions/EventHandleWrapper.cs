@@ -38,9 +38,9 @@ internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : 
 internal record EventHandlerExecutor
 {
     public object HandlerInstance { get; set; }
-    public Func<IEvent, CancellationToken, Task<IResult>> HandlerCallback { get; set; }
+    public Func<IEvent, CancellationToken, Task<Result>> HandlerCallback { get; set; }
 
-    public EventHandlerExecutor(object handlerInstance, Func<IEvent, CancellationToken, Task<IResult>> handlerCallback)
+    public EventHandlerExecutor(object handlerInstance, Func<IEvent, CancellationToken, Task<Result>> handlerCallback)
     {
         HandlerInstance = handlerInstance;
         HandlerCallback = handlerCallback;

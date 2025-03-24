@@ -30,7 +30,7 @@ internal class EventHandlerMediator
         _eventProcessingStrategy = serviceProvider.GetRequiredService<IEventHandlerProcessingStrategy>();
     }
 
-    public async Task<IResult[]> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
+    public async Task<Result[]> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : IEvent
     {
         try
         {

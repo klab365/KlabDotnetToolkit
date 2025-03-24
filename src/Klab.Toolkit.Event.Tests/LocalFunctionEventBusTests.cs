@@ -83,17 +83,17 @@ public class LocalFunctionEventBusTests
         _eventBus.GetLocalEventHandlers().First().Value.Count.Should().Be(0);
     }
 
-    private Task<IResult> IncreaseCounterAsync(TestEvent1 @event, CancellationToken cancellationToken)
+    private Task<Result> IncreaseCounterAsync(TestEvent1 @event, CancellationToken cancellationToken)
     {
         _counter++;
-        IResult res = Result.Success();
+        Result res = Result.Success();
         return Task.FromResult(res);
     }
 
-    private Task<IResult> IncreaseCounterAsync2(TestEvent1 @event, CancellationToken cancellationToken)
+    private Task<Result> IncreaseCounterAsync2(TestEvent1 @event, CancellationToken cancellationToken)
     {
         _counter += 2;
-        IResult res = Result.Success();
+        Result res = Result.Success();
         return Task.FromResult(res);
     }
 }

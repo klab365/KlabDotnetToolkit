@@ -20,7 +20,7 @@ public interface IEventBus
     /// <summary>
     /// Getter property for the local event handlers
     /// </summary>
-    ConcurrentDictionary<Type, List<KeyValuePair<int, Func<IEvent, CancellationToken, Task<IResult>>>>> GetLocalEventHandlers();
+    ConcurrentDictionary<Type, List<KeyValuePair<int, Func<IEvent, CancellationToken, Task<Result>>>>> GetLocalEventHandlers();
 
     /// <summary>
     /// Publishes an event and not wait until event is processed.
@@ -37,7 +37,7 @@ public interface IEventBus
     /// <typeparam name="TEvent"></typeparam>
     /// <param name="handler"></param>
     /// <returns></returns>
-    Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<IResult>> handler) where TEvent : IEvent;
+    Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : IEvent;
 
     /// <summary>
     /// Unsubscribes from an event with the local function
@@ -45,7 +45,7 @@ public interface IEventBus
     /// <typeparam name="TEvent"></typeparam>
     /// <param name="handler"></param>
     /// <returns></returns>
-    Result Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task<IResult>> handler) where TEvent : IEvent;
+    Result Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : IEvent;
 
     /// <summary>
     /// Sends a request and waits for the response
