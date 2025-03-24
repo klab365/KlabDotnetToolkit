@@ -70,13 +70,13 @@ internal sealed class TestEventHandler1 : IEventHandler<TestEvent1>
     private readonly object _lock = new();
     public int Counter { get; private set; }
 
-    public Task<IResult> Handle(TestEvent1 notification, CancellationToken cancellationToken)
+    public Task<Result> Handle(TestEvent1 notification, CancellationToken cancellationToken)
     {
         lock (_lock)
         {
             Counter++;
         }
-        IResult res = Result.Success();
+        Result res = Result.Success();
         return Task.FromResult(res);
     }
 }
@@ -87,13 +87,13 @@ internal sealed class TestEventHandler2 : IEventHandler<TestEvent1>
 
     public int Counter { get; private set; }
 
-    public Task<IResult> Handle(TestEvent1 notification, CancellationToken cancellationToken)
+    public Task<Result> Handle(TestEvent1 notification, CancellationToken cancellationToken)
     {
         lock (_lock)
         {
             Counter += 2;
         }
-        IResult res = Result.Success();
+        Result res = Result.Success();
         return Task.FromResult(res);
     }
 }

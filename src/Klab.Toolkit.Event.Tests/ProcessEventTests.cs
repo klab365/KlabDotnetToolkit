@@ -41,21 +41,21 @@ public sealed class ProcessEventTests
         _counter.Should().Be("2a2a1");
     }
 
-    private Task<IResult> TestEvent2aHandler(TestEvent2 @event, CancellationToken token)
+    private Task<Result> TestEvent2aHandler(TestEvent2 @event, CancellationToken token)
     {
         _counter += "a";
-        return Task.FromResult<IResult>(Result.Success());
+        return Task.FromResult<Result>(Result.Success());
     }
 
-    private Task<IResult> TestEvent2Handler(TestEvent2 @event, CancellationToken token)
+    private Task<Result> TestEvent2Handler(TestEvent2 @event, CancellationToken token)
     {
         _counter += "2";
-        return Task.FromResult<IResult>(Result.Success());
+        return Task.FromResult<Result>(Result.Success());
     }
 
-    private Task<IResult> TestEvent1Handler(TestEvent1 @event, CancellationToken token)
+    private Task<Result> TestEvent1Handler(TestEvent1 @event, CancellationToken token)
     {
         _counter += "1";
-        return Task.FromResult<IResult>(Result.Success());
+        return Task.FromResult<Result>(Result.Success());
     }
 }

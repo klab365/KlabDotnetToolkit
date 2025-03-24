@@ -60,15 +60,15 @@ internal sealed class EventProcesserJob : BackgroundService
         {
             try
             {
-                Task<IResult[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
-                Task<IResult[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
+                Task<Result[]> task1 = ProcessHandlerClassesAsync(@event, stoppingToken);
+                Task<Result[]> task2 = ProcessLocalFunctionsAsync(@event, stoppingToken);
 
                 await Task.WhenAll(
                     task1,
                     task2
                 );
 
-                List<IResult> res = [.. await task1, .. await task2];
+                List<Result> res = [.. await task1, .. await task2];
                 LogResult(@event, res.ToArray());
             }
             catch (Exception ex)
@@ -78,7 +78,7 @@ internal sealed class EventProcesserJob : BackgroundService
         }
     }
 
-    private void LogResult(IEvent @event, IResult[] res)
+    private void LogResult(IEvent @event, Result[] res)
     {
         if (!_eventModuleConfiguration.ShouldLogEvents)
         {
@@ -94,7 +94,7 @@ internal sealed class EventProcesserJob : BackgroundService
         File.WriteAllText(_eventModuleConfiguration.EventLogFilePath, jsonLog);
     }
 
-    private static IEnumerable<object> GenerateResultLogs(IResult[] res)
+    private static IEnumerable<object> GenerateResultLogs(Result[] res)
     {
         if (res.All(r => r.IsSuccess))
         {
@@ -108,24 +108,24 @@ internal sealed class EventProcesserJob : BackgroundService
         return failedResults;
     }
 
-    private async Task<IResult[]> ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
+    private async Task<Result[]> ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
     {
-        IResult[] res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
+        Result[] res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
         return res;
     }
 
-    private async Task<IResult[]> ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
+    private async Task<Result[]> ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
     {
         if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
         {
             return [];
         }
 
-        IEnumerable<Task<IResult>> tasks = _eventBus
+        IEnumerable<Task<Result>> tasks = _eventBus
             .GetLocalEventHandlers()[@event.GetType()]
             .Select(handler => handler.Value(@event, stoppingToken));
 
-        IResult[] res = await Task.WhenAll(tasks);
+        Result[] res = await Task.WhenAll(tasks);
         return res;
     }
 }

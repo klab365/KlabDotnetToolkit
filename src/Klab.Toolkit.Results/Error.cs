@@ -5,7 +5,7 @@ namespace Klab.Toolkit.Results;
 /// <summary>
 /// Informative Error which is not pending, if the error was read by the user!!
 /// </summary>
-public record Error : IError
+public record Error
 {
     /// <inheritdoc/>
     public ErrorType Type { get; }

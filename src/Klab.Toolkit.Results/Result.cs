@@ -7,12 +7,12 @@ namespace Klab.Toolkit.Results;
 /// Additionally it contains a value which can be used to return the result of the operation
 /// and error messages if the operation failed.
 /// </summary>
-public record Result : IResult
+public record Result
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Result{T}"/> class.
     /// </summary>
-    protected Result(bool isSucceeded, IError error)
+    protected Result(bool isSucceeded, Error error)
     {
         IsSuccess = isSucceeded;
         Error = error;
@@ -31,7 +31,7 @@ public record Result : IResult
     /// <summary>
     /// Gets contains Errors.
     /// </summary>
-    public IError Error { get; }
+    public Error Error { get; }
 
     /// <summary>
     /// Generate a success.
@@ -49,13 +49,13 @@ public record Result : IResult
     /// <returns></returns>
     public static Result<T> Success<T>(T value) where T : notnull
     {
-        return new Result<T>(value, true, Results.Error.None());
+        return new Result<T>(value, true, Error.None());
     }
 
     /// <summary>
     /// Generate a failure.
     /// </summary>
-    public static Result Failure(IError error)
+    public static Result Failure(Error error)
     {
         return new Result(false, error);
     }
@@ -66,10 +66,21 @@ public record Result : IResult
     /// <typeparam name="T"></typeparam>
     /// <param name="error"></param>
     /// <returns></returns>
-    public static Result<T> Failure<T>(IError error) where T : notnull
+    public static Result<T> Failure<T>(Error error) where T : notnull
     {
         return new Result<T>(default!, false, error);
     }
+
+    /// <summary>
+    /// Implicit conversion from Result to bool
+    /// </summary>
+    /// <param name="result"></param>
+    public static implicit operator bool(Result result) => result.IsSuccess;
+
+    /// <summary>
+    /// Implicit conversion error to Result
+    /// </summary>
+    public static implicit operator Result(Error error) => Failure(error);
 }
 
 
@@ -77,7 +88,7 @@ public record Result : IResult
 /// Generic Result
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public record Result<T> : Result, IResult<T> where T : notnull
+public record Result<T> : Result where T : notnull
 {
     private readonly T _value;
 
@@ -87,12 +98,32 @@ public record Result<T> : Result, IResult<T> where T : notnull
     public T Value => IsSuccess ? _value : throw new InvalidOperationException("Cannot access value of failure result");
 
     /// <summary>
+    /// Implicit conversion from T to Result.
+    /// </summary>
+    public static implicit operator Result<T>(T value) => Success(value);
+
+    /// <summary>
+    /// Implicit conversion from Error to Result (failure case)
+    /// </summary>
+    /// <param name="error"></param>
+    public static implicit operator Result<T>(Error error) => Failure<T>(error);
+
+    /// <summary>
+    /// Implicit conversion from Result to bool
+    /// </summary>
+    /// <param name="result"></param>
+    public static implicit operator bool(Result<T> result) => result.IsSuccess;
+
+    /// <summary>
+    /// Implicit conversion from Result to T
+    /// </summary>
+    /// <param name="result"></param>
+    public static implicit operator T(Result<T> result) => result.Value;
+
+    /// <summary>
     /// Protected constructor
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="isSuccess"></param>
-    /// <param name="error"></param>
-    internal Result(T value, bool isSuccess, IError error) : base(isSuccess, error)
+    internal Result(T value, bool isSuccess, Error error) : base(isSuccess, error)
     {
         _value = value;
     }
