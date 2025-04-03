@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.7.0
+
+### Added
+
+* Add ResultExtensions to the Klab.Toolkit.Results project
+
 ## 2.6.0
 
 * Add some implict operators to the Result class
