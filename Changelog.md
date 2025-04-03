@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.7.1
+
+### Changed
+
+* Update some functions in the result extensions
+
 ## 2.7.0
 
 ### Added

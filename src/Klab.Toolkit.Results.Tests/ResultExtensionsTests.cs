@@ -9,115 +9,106 @@ public class ResultExtensionsTests
     [Fact]
     public void Map_ShouldTransformSuccessValue()
     {
-        Result<int> successResult = Result.Success(42);
-        Result<int> mappedResult = successResult.Map(x => x * 2);
+        Result<int> result = Result.Success(42).Map(x => x * 2);
 
-        Assert.True(mappedResult.IsSuccess);
-        Assert.Equal(84, mappedResult.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(84);
     }
 
     [Fact]
     public void Map_ShouldReturnFailureOnSourceFailure()
     {
-        Result<int> failureResult = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
-        Result<int> mappedResult = failureResult.Map(x => x * 2);
+        Result<int> result = Result.Failure<int>(Error.Create("ErrorCode", "Error")).Map(x => x * 2);
 
-        Assert.True(mappedResult.IsFailure);
-        Assert.Equal("Error", mappedResult.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Be("Error");
     }
 
     [Fact]
     public void Bind_ShouldChainOperationsOnSuccess()
     {
-        Result<int> successResult = Result.Success(42);
-        Result<int> chainedResult = successResult.Bind(x => Result.Success(x * 2));
+        Result<int> result = Result.Success(42).Bind(x => Result.Success(x * 2));
 
-        Assert.True(chainedResult.IsSuccess);
-        Assert.Equal(84, chainedResult.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(84);
     }
 
     [Fact]
     public void Bind_ShouldReturnFailureOnSourceFailure()
     {
-        Result<int> failureResult = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
-        Result<int> chainedResult = failureResult.Bind(x => Result.Success(x * 2));
+        Result<int> result = Result.Failure<int>(Error.Create("ErrorCode", "Error")).Bind(x => Result.Success(x * 2));
 
-        Assert.True(chainedResult.IsFailure);
-        Assert.Equal("Error", chainedResult.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Be("Error");
     }
 
     [Fact]
     public void Tap_ShouldExecuteActionOnSuccess()
     {
-        Result<string> successResult = Result.Success("Success");
         bool actionExecuted = false;
-        successResult.Tap(result => actionExecuted = true);
+        Result.Success("Success").Tap(_ => actionExecuted = true);
 
-        Assert.True(actionExecuted);
+        actionExecuted.Should().BeTrue();
     }
 
     [Fact]
     public void Tap_ShouldExecuteActionOnSuccessWithGenericValue()
     {
-        Result<string> successResult = Result.Success("Success");
-        string result = string.Empty;
-        successResult.Tap(value => result = value.Value);
+        string capturedValue = string.Empty;
+        Result.Success("Success").Tap(value => capturedValue = value);
 
-        result.Should().Be("Success");
+        capturedValue.Should().Be("Success");
     }
 
     [Fact]
     public void OnFailure_ShouldExecuteActionOnFailure()
     {
-        Result<string> failureResult = Result.Failure<string>(Error.Create("ErrorCode", "Error"));
         bool actionExecuted = false;
-        failureResult.OnFailure(error => actionExecuted = true);
+        Result.Failure<string>(Error.Create("ErrorCode", "Error")).OnFailure(_ => actionExecuted = true);
 
-        Assert.True(actionExecuted);
+        actionExecuted.Should().BeTrue();
     }
 
     [Fact]
     public void Ensure_ShouldReturnSuccessIfConditionIsMet()
     {
-        Result<int> successResult = Result.Success(42);
-        Result<int> ensuredResult = successResult.Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
+        Result<int> result = Result.Success(42).Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
 
-        Assert.True(ensuredResult.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
     public void Ensure_ShouldReturnFailureIfConditionIsNotMet()
     {
-        Result<int> failureResult = Result.Success(0);
-        Result<int> ensuredResult = failureResult.Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
+        Result<int> result = Result.Success(0).Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
 
-        Assert.True(ensuredResult.IsFailure);
-        Assert.Equal("Error", ensuredResult.Error.Message);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Be("Error");
     }
 
     [Fact]
     public void ToResult_ShouldWrapValueInSuccessResult()
     {
-        int value = 42;
-        Result<int> result = value.ToResult();
+        Result<int> result = 42.ToResult();
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(42, result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(42);
     }
 
     [Fact]
     public void Unwrap_ShouldRetrieveValueOnSuccess()
     {
-        Result<int> successResult = Result.Success(42);
-        int value = successResult.Unwrap();
+        int value = Result.Success(42).Unwrap();
 
-        Assert.Equal(42, value);
+        value.Should().Be(42);
     }
 
     [Fact]
     public void Unwrap_ShouldThrowExceptionOnFailure()
     {
-        Result<int> failureResult = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
-        Assert.Throws<InvalidOperationException>(() => failureResult.Unwrap());
+        Result<int> result = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
+
+        result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>()
+            .WithMessage("Cannot unwrap a failure result.");
     }
 }
