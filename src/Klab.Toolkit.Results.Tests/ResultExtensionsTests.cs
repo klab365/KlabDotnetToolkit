@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
@@ -43,10 +44,29 @@ public class ResultExtensionsTests
     }
 
     [Fact]
+    public void Bind_ShouldReturnFailureOnBindFailure()
+    {
+        Result result = Result.Success(42).Bind(() => Result.Success());
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Bind_Multiple()
+    {
+        Result<int> result = Result.Success(42)
+            .Bind(x => x > 0 ? Result.Success(x * 2) : Result.Failure<int>(Error.Create("ErrorCode", "ThresholdError1")))
+            .Bind(x => x > 100 ? Result.Success(x * 2) : Result.Failure<int>(Error.Create("ErrorCode", "ThresholdError2")));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Be("ThresholdError2");
+    }
+
+    [Fact]
     public void Tap_ShouldExecuteActionOnSuccess()
     {
         bool actionExecuted = false;
-        Result.Success("Success").Tap(_ => actionExecuted = true);
+        Result.Success("Success").OnSuccess(_ => actionExecuted = true);
 
         actionExecuted.Should().BeTrue();
     }
@@ -55,9 +75,19 @@ public class ResultExtensionsTests
     public void Tap_ShouldExecuteActionOnSuccessWithGenericValue()
     {
         string capturedValue = string.Empty;
-        Result.Success("Success").Tap(value => capturedValue = value);
+        Result.Success("Success").OnSuccess(value => capturedValue = value);
 
         capturedValue.Should().Be("Success");
+    }
+
+    [Fact]
+    public async Task TapAsync_ShouldExecuteActionOnSuccess()
+    {
+        bool actionExecuted = false;
+        Result.Success("Success").OnSuccess(async _ => await Task.Run(() => actionExecuted = true));
+        await Task.Delay(100);
+
+        actionExecuted.Should().BeTrue();
     }
 
     [Fact]
