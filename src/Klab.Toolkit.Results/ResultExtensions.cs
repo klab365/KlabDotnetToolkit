@@ -84,6 +84,56 @@ public static class ResultExtensions
     }
 
     /// <summary>
+    /// Chains operations that return Result types, allowing for error propagation.
+    /// </summary>
+    public static Result<T> Bind<T>(
+        this Result result,
+        Func<Result<T>> bindFunc) where T : notnull
+    {
+        return result.IsSuccess
+            ? bindFunc()
+            : Result.Failure<T>(result.Error);
+    }
+
+    /// <summary>
+    /// Asynchronously chains operations that return Result types, allowing for error propagation.
+    /// </summary>
+    public static async Task<Result<T>> BindAsync<T>(
+        this Task<Result> resultTask,
+        Func<Task<Result<T>>> bindFunc) where T : notnull
+    {
+        Result result = await resultTask.ConfigureAwait(false);
+        return result.IsSuccess
+            ? await bindFunc().ConfigureAwait(false)
+            : Result.Failure<T>(result.Error);
+    }
+
+    /// <summary>
+    /// Chains operations that return Result types, allowing for error propagation.
+    /// </summary>
+    public static Result Bind<TSource>(
+        this Result<TSource> result,
+        Func<TSource, Result> bindFunc) where TSource : notnull
+    {
+        return result.IsSuccess
+            ? bindFunc(result.Value)
+            : Result.Failure(result.Error);
+    }
+
+    /// <summary>
+    /// Asynchronously chains operations that return Result types, allowing for error propagation.
+    /// </summary>
+    public static async Task<Result> BindAsync<TSource>(
+        this Task<Result<TSource>> resultTask,
+        Func<TSource, Task<Result>> bindFunc) where TSource : notnull
+    {
+        Result<TSource> result = await resultTask.ConfigureAwait(false);
+        return result.IsSuccess
+            ? await bindFunc(result.Value).ConfigureAwait(false)
+            : Result.Failure(result.Error);
+    }
+
+    /// <summary>
     /// Executes an action when the result is successful without modifying it and returns the original result.
     /// </summary>
     public static Result<T> OnSuccess<T>(
