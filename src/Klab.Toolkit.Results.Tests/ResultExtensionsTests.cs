@@ -63,7 +63,20 @@ public class ResultExtensionsTests
     }
 
     [Fact]
-    public void Tap_ShouldExecuteActionOnSuccess()
+    public Task BindAsync_Multiple()
+    {
+        Result result = Result.Success(199)
+            .Bind(x => x > 0 ? Result.Success(x * 2) : Result.Failure<int>(Error.Create("ErrorCode", "ThresholdError1")))
+            .Bind(x => x > 100 ? Result.Success(x * 2) : Result.Failure<int>(Error.Create("ErrorCode", "ThresholdError2")))
+            .Bind(x => x > 1000 ? Result.Success() : Result.Failure(Error.Create("ErrorCode", "ThresholdError3")));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Message.Should().Be("ThresholdError3");
+        return Task.CompletedTask;
+    }
+
+    [Fact]
+    public void OnSuccess_ShouldExecuteActionOnSuccess()
     {
         bool actionExecuted = false;
         Result.Success("Success").OnSuccess(_ => actionExecuted = true);
@@ -72,7 +85,7 @@ public class ResultExtensionsTests
     }
 
     [Fact]
-    public void Tap_ShouldExecuteActionOnSuccessWithGenericValue()
+    public void OnSuccess_ShouldExecuteActionOnSuccessWithGenericValue()
     {
         string capturedValue = string.Empty;
         Result.Success("Success").OnSuccess(value => capturedValue = value);

@@ -95,7 +95,7 @@ public record Result<T> : Result where T : notnull
     /// <summary>
     /// Gets value which contains the result of the operation.
     /// </summary>
-    public T Value => IsSuccess ? _value : throw new InvalidOperationException("Cannot access value of failure result");
+    public T Value => IsSuccess ? _value : throw new InvalidOperationException($"Cannot access value: operation failed with error: {Error}");
 
     /// <summary>
     /// Implicit conversion from T to Result.
