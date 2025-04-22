@@ -12,7 +12,7 @@ namespace Klab.Toolkit.Event;
 /// </summary>
 internal class TaskWhenAllPublisher : IEventHandlerProcessingStrategy
 {
-    public Task<Result[]> Handle(IEnumerable<EventHandlerExecutor> handlerExecutors, IEvent @event, CancellationToken cancellationToken)
+    public Task<Result[]> Handle(IEnumerable<EventHandlerExecutor> handlerExecutors, EventBase @event, CancellationToken cancellationToken)
     {
         Task<Result>[] tasks = handlerExecutors
             .Select(handler => handler.HandlerCallback(@event, cancellationToken))

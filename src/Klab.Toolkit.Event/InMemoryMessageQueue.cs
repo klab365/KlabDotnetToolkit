@@ -11,16 +11,16 @@ namespace Klab.Toolkit.Event;
 /// </summary>
 internal sealed class InMemoryMessageQueue : IEventQueue
 {
-    private readonly Channel<IEvent> _channel = Channel.CreateUnbounded<IEvent>();
+    private readonly Channel<EventBase> _channel = Channel.CreateUnbounded<EventBase>();
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IEvent> DequeueAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<EventBase> DequeueAsync(CancellationToken cancellationToken = default)
     {
         return _channel.Reader.ReadAllAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task EnqueueAsync(IEvent @event, CancellationToken cancellationToken = default)
+    public async Task EnqueueAsync(EventBase @event, CancellationToken cancellationToken = default)
     {
         await _channel.Writer.WriteAsync(@event, cancellationToken);
     }

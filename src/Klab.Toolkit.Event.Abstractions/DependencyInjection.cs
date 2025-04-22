@@ -16,7 +16,7 @@ public static class DependencyInjection
     /// <param name="services"></param>
     /// <param name="lifetime"></param>
     public static void AddEventSubsribtion<TEvent, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
-        where TEvent : IEvent
+        where TEvent : EventBase
         where THandler : class, IEventHandler<TEvent>
     {
         if (lifetime == ServiceLifetime.Singleton)

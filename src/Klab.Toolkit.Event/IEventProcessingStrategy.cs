@@ -7,5 +7,5 @@ namespace Klab.Toolkit.Event;
 
 internal interface IEventHandlerProcessingStrategy
 {
-    Task<Result[]> Handle(IEnumerable<EventHandlerExecutor> handlerExecutors, IEvent @event, CancellationToken cancellationToken);
+    Task<Result[]> Handle(IEnumerable<EventHandlerExecutor> handlerExecutors, EventBase @event, CancellationToken cancellationToken);
 }

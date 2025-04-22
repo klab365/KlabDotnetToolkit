@@ -30,7 +30,7 @@ If you want to forbid to log sensitive data of a event you can add the attribute
 Example: `MyEvent` will be logged without the property `Password`.
 
 ```csharp
-public class MyEvent : IEvent
+public class MyEvent : EventBase
 {
     public string Name { get; set; }
 

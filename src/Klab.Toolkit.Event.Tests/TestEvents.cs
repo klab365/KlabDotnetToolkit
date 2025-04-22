@@ -1,20 +1,9 @@
-﻿using System;
+﻿namespace Klab.Toolkit.Event.Tests;
 
-namespace Klab.Toolkit.Event.Tests;
-
-public sealed record TestEvent1 : IEvent
+public sealed record TestEvent1 : EventBase
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
-
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
-
 }
 
-public sealed record TestEvent2(string Name) : IEvent
+public sealed record TestEvent2(string Name) : EventBase
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
-
-    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
-
-    public string Name { get; init; } = Name;
 }

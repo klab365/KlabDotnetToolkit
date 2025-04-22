@@ -3,17 +3,17 @@
 namespace Klab.Toolkit.Event;
 
 /// <summary>
-/// Marker interface for events
+/// Abstract base class for all events.
 /// </summary>
-public interface IEvent
+public abstract record EventBase
 {
     /// <summary>
     /// Id of the event
     /// </summary>
-    Guid Id { get; }
+    public virtual Guid Id { get; } = Guid.NewGuid();
 
     /// <summary>
     /// Time of the event creation
     /// </summary>
-    DateTimeOffset CreatedAt { get; }
+    public virtual DateTime CreatedAt { get; } = DateTime.UtcNow;
 }
