@@ -7,21 +7,21 @@ namespace Klab.Toolkit.Event;
 /// <summary>
 /// Custom JSON converter for interfaces
 /// </summary>
-internal sealed class EventInterfaceJsonConverter : JsonConverter<IEvent>
+internal sealed class EventInterfaceJsonConverter : JsonConverter<EventBase>
 {
     /// <inheritdoc/>
-    public override IEvent? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override EventBase? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, IEvent? value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, EventBase? value, JsonSerializerOptions options)
     {
         switch (value)
         {
             case null:
-                JsonSerializer.Serialize(writer, (IEvent?)null, options);
+                JsonSerializer.Serialize(writer, (EventBase?)null, options);
                 break;
             default:
                 {

@@ -14,7 +14,7 @@ namespace Klab.Toolkit.Event;
 internal sealed class EventBus : IEventBus
 {
     private readonly EventHandlerMediator _eventHandlerMediator;
-    private readonly ConcurrentDictionary<Type, List<KeyValuePair<int, Func<IEvent, CancellationToken, Task<Result>>>>> _localEventHandlers = new();
+    private readonly ConcurrentDictionary<Type, List<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> _localEventHandlers = new();
 
     public IEventQueue MessageQueue { get; }
 
@@ -24,18 +24,18 @@ internal sealed class EventBus : IEventBus
         _eventHandlerMediator = eventHandlerMediator;
     }
 
-    public ConcurrentDictionary<Type, List<KeyValuePair<int, Func<IEvent, CancellationToken, Task<Result>>>>> GetLocalEventHandlers()
+    public ConcurrentDictionary<Type, List<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> GetLocalEventHandlers()
     {
         return _localEventHandlers;
     }
 
-    public async Task<Result> PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : IEvent
+    public async Task<Result> PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : EventBase
     {
         await MessageQueue.EnqueueAsync(@event, cancellationToken);
         return Result.Success();
     }
 
-    public Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : IEvent
+    public Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
     {
         if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
@@ -52,7 +52,7 @@ internal sealed class EventBus : IEventBus
         return Result.Success();
     }
 
-    public Result Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : IEvent
+    public Result Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
     {
         if (!_localEventHandlers.ContainsKey(typeof(TEvent)))
         {
@@ -75,7 +75,7 @@ internal sealed class EventBus : IEventBus
         return _eventHandlerMediator.SendToStreamHandlerAsync(request, cancellationToken);
     }
 
-    private static int CalculateHashOfHandler<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : IEvent
+    private static int CalculateHashOfHandler<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
     {
         return handler.Method.GetHashCode() ^ handler.Target?.GetHashCode() ?? throw new InvalidOperationException("Handler is not valid");
     }

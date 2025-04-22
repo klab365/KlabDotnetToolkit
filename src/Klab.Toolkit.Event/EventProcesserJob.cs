@@ -56,7 +56,7 @@ internal sealed class EventProcesserJob : BackgroundService
     /// <returns></returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (IEvent @event in _eventBus.MessageQueue.DequeueAsync(stoppingToken))
+        await foreach (EventBase @event in _eventBus.MessageQueue.DequeueAsync(stoppingToken))
         {
             try
             {
@@ -68,8 +68,8 @@ internal sealed class EventProcesserJob : BackgroundService
                     task2
                 );
 
-                List<Result> res = [.. await task1, .. await task2];
-                LogResult(@event, res.ToArray());
+                List<Result> res = [.. task1.Result, .. task2.Result];
+                LogResult(@event, [.. res]);
             }
             catch (Exception ex)
             {
@@ -78,7 +78,7 @@ internal sealed class EventProcesserJob : BackgroundService
         }
     }
 
-    private void LogResult(IEvent @event, Result[] res)
+    private void LogResult(EventBase @event, Result[] res)
     {
         if (!_eventModuleConfiguration.ShouldLogEvents)
         {
@@ -108,13 +108,13 @@ internal sealed class EventProcesserJob : BackgroundService
         return failedResults;
     }
 
-    private async Task<Result[]> ProcessHandlerClassesAsync(IEvent @event, CancellationToken stoppingToken)
+    private async Task<Result[]> ProcessHandlerClassesAsync(EventBase @event, CancellationToken stoppingToken)
     {
         Result[] res = await _eventHandlerMediator.PublishToHandlersAsync(@event, stoppingToken);
         return res;
     }
 
-    private async Task<Result[]> ProcessLocalFunctionsAsync(IEvent @event, CancellationToken stoppingToken)
+    private async Task<Result[]> ProcessLocalFunctionsAsync(EventBase @event, CancellationToken stoppingToken)
     {
         if (!_eventBus.GetLocalEventHandlers().ContainsKey(@event.GetType()))
         {

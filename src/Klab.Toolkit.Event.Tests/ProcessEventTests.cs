@@ -44,18 +44,18 @@ public sealed class ProcessEventTests
     private Task<Result> TestEvent2aHandler(TestEvent2 @event, CancellationToken token)
     {
         _counter += "a";
-        return Task.FromResult<Result>(Result.Success());
+        return Task.FromResult(Result.Success());
     }
 
     private Task<Result> TestEvent2Handler(TestEvent2 @event, CancellationToken token)
     {
         _counter += "2";
-        return Task.FromResult<Result>(Result.Success());
+        return Task.FromResult(Result.Success());
     }
 
     private Task<Result> TestEvent1Handler(TestEvent1 @event, CancellationToken token)
     {
         _counter += "1";
-        return Task.FromResult<Result>(Result.Success());
+        return Task.FromResult(Result.Success());
     }
 }

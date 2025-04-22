@@ -8,7 +8,7 @@ namespace Klab.Toolkit.Event;
 /// Marker interface for event handlers
 /// </summary>
 /// <typeparam name="TEvent"></typeparam>
-public interface IEventHandler<in TEvent> where TEvent : IEvent
+public interface IEventHandler<in TEvent> where TEvent : EventBase
 {
     /// <summary>
     /// Handle the event

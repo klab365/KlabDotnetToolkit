@@ -15,13 +15,13 @@ public interface IEventQueue
     /// <param name="event"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task EnqueueAsync(IEvent @event, CancellationToken cancellationToken = default);
+    Task EnqueueAsync(EventBase @event, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Dequeues events
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    IAsyncEnumerable<IEvent> DequeueAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<EventBase> DequeueAsync(CancellationToken cancellationToken = default);
 }
 

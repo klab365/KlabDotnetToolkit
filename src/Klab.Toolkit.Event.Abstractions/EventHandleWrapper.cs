@@ -20,7 +20,7 @@ internal abstract class EventHandlerWrapper
 /// Generic event handler wrapper
 /// </summary>
 /// <typeparam name="TEvent"></typeparam>
-internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : IEvent
+internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : EventBase
 {
     public override IEnumerable<EventHandlerExecutor> GetHandlers(IServiceProvider serviceProvider)
     {
@@ -38,9 +38,9 @@ internal class EventHandlerWrapper<TEvent> : EventHandlerWrapper where TEvent : 
 internal record EventHandlerExecutor
 {
     public object HandlerInstance { get; set; }
-    public Func<IEvent, CancellationToken, Task<Result>> HandlerCallback { get; set; }
+    public Func<EventBase, CancellationToken, Task<Result>> HandlerCallback { get; set; }
 
-    public EventHandlerExecutor(object handlerInstance, Func<IEvent, CancellationToken, Task<Result>> handlerCallback)
+    public EventHandlerExecutor(object handlerInstance, Func<EventBase, CancellationToken, Task<Result>> handlerCallback)
     {
         HandlerInstance = handlerInstance;
         HandlerCallback = handlerCallback;
