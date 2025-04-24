@@ -226,6 +226,35 @@ public static class ResultExtensions
     }
 
     /// <summary>
+    /// Executes an action when the result is a failure without modifying it.
+    /// </summary>
+    public static Result OnFailure(
+        this Result result,
+        Action<Error> failureAction)
+    {
+        if (!result.IsSuccess)
+        {
+            failureAction(result.Error);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously executes an action when the result is a failure without modifying it.
+    /// </summary>
+    public static async Task<Result> OnFailureAsync(
+        this Task<Result> resultTask,
+        Func<Error, Task> failureAction)
+    {
+        Result result = await resultTask.ConfigureAwait(false);
+        if (!result.IsSuccess)
+        {
+            await failureAction(result.Error).ConfigureAwait(false);
+        }
+        return result;
+    }
+
+    /// <summary>
     /// Ensures a condition is met before proceeding with the operation.
     /// </summary>
     public static Result<T> Ensure<T>(

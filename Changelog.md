@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.8.1
+
+### Changed
+
+* Update ResultExtensions functions with OnFailure
+
 ## 2.8.0
 
 ### Changed
