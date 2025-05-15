@@ -56,11 +56,9 @@ public static class ResultExtensions
         return result.IsSuccess
             ? await bindFunc(result.Value).ConfigureAwait(false)
             : Result.Failure<TResult>(result.Error);
-    }
-
-    /// <summary>
-    /// Chains operations that return Result types, allowing for error propagation.
-    /// </summary>
+    }    /// <summary>
+         /// Chains operations that return Result types, allowing for error propagation.
+         /// </summary>
     public static Result Bind(
         this Result result,
         Func<Result> bindFunc)
@@ -68,6 +66,18 @@ public static class ResultExtensions
         return result.IsSuccess
             ? bindFunc()
             : Result.Failure(result.Error);
+    }
+
+    /// <summary>
+    /// Chains operations that return Result types, allowing for error propagation.
+    /// </summary>
+    public static Result<T> Bind<T>(
+        this Result result,
+        Func<Result<T>> bindFunc) where T : notnull
+    {
+        return result.IsSuccess
+            ? bindFunc()
+            : Result.Failure<T>(result.Error);
     }
 
     /// <summary>
@@ -84,14 +94,28 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Chains operations that return Result types, allowing for error propagation.
+    /// Asynchronously chains operations that return Result types, allowing for error propagation.
+    /// This overload allows binding directly from Result.Success() to an async operation.
     /// </summary>
-    public static Result<T> Bind<T>(
+    public static async Task<Result> BindAsync(
         this Result result,
-        Func<Result<T>> bindFunc) where T : notnull
+        Func<Task<Result>> bindFunc)
     {
         return result.IsSuccess
-            ? bindFunc()
+            ? await bindFunc().ConfigureAwait(false)
+            : Result.Failure(result.Error);
+    }
+
+    /// <summary>
+    /// Asynchronously chains operations that return Result types with values, allowing for error propagation.
+    /// This overload allows binding directly from Result.Success() to an async operation that returns a value.
+    /// </summary>
+    public static async Task<Result<T>> BindAsync<T>(
+        this Result result,
+        Func<Task<Result<T>>> bindFunc) where T : notnull
+    {
+        return result.IsSuccess
+            ? await bindFunc().ConfigureAwait(false)
             : Result.Failure<T>(result.Error);
     }
 
