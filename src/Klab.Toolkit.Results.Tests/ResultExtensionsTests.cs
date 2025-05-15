@@ -76,6 +76,124 @@ public class ResultExtensionsTests
     }
 
     [Fact]
+    public async Task BindAsync_FromResultSuccess_ShouldChainOperationsOnSuccess()
+    {
+        // Arrange
+        Result initialResult = Result.Success();
+
+        // Act
+        Result result = await initialResult.BindAsync(async () =>
+        {
+            await Task.Delay(10);
+            return Result.Success();
+        });
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BindAsync_FromResultSuccess_ShouldReturnFailureOnBindFailure()
+    {
+        // Arrange
+        Result initialResult = Result.Success();
+        Error error = Error.Create("ErrorCode", "Error");
+
+        // Act
+        Result result = await initialResult.BindAsync(async () =>
+        {
+            await Task.Delay(10);
+            return Result.Failure(error);
+        });
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public async Task BindAsync_FromResultFailure_ShouldNotExecuteBindFunc()
+    {
+        // Arrange
+        Error initialError = Error.Create("ErrorCode", "Initial Error");
+        Result initialResult = Result.Failure(initialError);
+        bool bindFuncExecuted = false;
+
+        // Act
+        Result result = await initialResult.BindAsync(async () =>
+        {
+            bindFuncExecuted = true;
+            await Task.Delay(10);
+            return Result.Success();
+        });
+
+        // Assert
+        bindFuncExecuted.Should().BeFalse();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(initialError);
+    }
+
+    [Fact]
+    public async Task BindAsync_FromResultSuccess_ShouldChainOperationsWithGenericValueOnSuccess()
+    {
+        // Arrange
+        Result initialResult = Result.Success();
+        string expectedValue = "Success Value";
+
+        // Act
+        Result<string> result = await initialResult.BindAsync(async () =>
+        {
+            await Task.Delay(10);
+            return Result.Success(expectedValue);
+        });
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(expectedValue);
+    }
+
+    [Fact]
+    public async Task BindAsync_FromResultSuccess_ShouldReturnFailureWithGenericValueOnBindFailure()
+    {
+        // Arrange
+        Result initialResult = Result.Success();
+        Error error = Error.Create("ErrorCode", "Error");
+
+        // Act
+        Result<string> result = await initialResult.BindAsync<string>(async () =>
+        {
+            await Task.Delay(10);
+            return Result.Failure<string>(error);
+        });
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public async Task BindAsync_FromResultFailure_ShouldNotExecuteBindFuncWithGenericValue()
+    {
+        // Arrange
+        Error initialError = Error.Create("ErrorCode", "Initial Error");
+        Result initialResult = Result.Failure(initialError);
+        bool bindFuncExecuted = false;
+
+        // Act
+        Result<string> result = await initialResult.BindAsync<string>(async () =>
+        {
+            bindFuncExecuted = true;
+            await Task.Delay(10);
+            return Result.Success("Success Value");
+        });
+
+        // Assert
+        bindFuncExecuted.Should().BeFalse();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(initialError);
+    }
+
+    [Fact]
     public void OnSuccess_ShouldExecuteActionOnSuccess()
     {
         bool actionExecuted = false;
