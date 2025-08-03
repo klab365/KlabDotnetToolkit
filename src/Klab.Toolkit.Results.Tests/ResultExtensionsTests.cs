@@ -231,23 +231,6 @@ public class ResultExtensionsTests
     }
 
     [Fact]
-    public void Ensure_ShouldReturnSuccessIfConditionIsMet()
-    {
-        Result<int> result = Result.Success(42).Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
-
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Ensure_ShouldReturnFailureIfConditionIsNotMet()
-    {
-        Result<int> result = Result.Success(0).Ensure(x => x > 0, Error.Create("ErrorCode", "Error"));
-
-        result.IsFailure.Should().BeTrue();
-        result.Error.Message.Should().Be("Error");
-    }
-
-    [Fact]
     public void ToResult_ShouldWrapValueInSuccessResult()
     {
         Result<int> result = 42.ToResult();

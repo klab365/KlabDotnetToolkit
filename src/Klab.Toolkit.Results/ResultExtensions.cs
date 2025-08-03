@@ -279,36 +279,6 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Ensures a condition is met before proceeding with the operation.
-    /// </summary>
-    public static Result<T> Ensure<T>(
-        this Result<T> result,
-        Func<T, bool> condition,
-        Error error) where T : notnull
-    {
-        return result.Bind(value => condition(value) ? Result.Success(value) : Result.Failure<T>(error));
-    }
-
-    /// <summary>
-    /// Asynchronously ensures a condition is met before proceeding with the operation.
-    /// </summary>
-    public static async Task<Result<T>> EnsureAsync<T>(
-        this Task<Result<T>> resultTask,
-        Func<T, Task<bool>> condition,
-        Error error) where T : notnull
-    {
-        Result<T> result = await resultTask.ConfigureAwait(false);
-        if (!result.IsSuccess)
-        {
-            return result;
-        }
-
-        return await condition(result.Value).ConfigureAwait(false)
-            ? Result.Success(result.Value)
-            : Result.Failure<T>(error);
-    }
-
-    /// <summary>
     /// Wraps a value in a successful Result.
     /// </summary>
     public static Result<T> ToResult<T>(this T value) where T : notnull
