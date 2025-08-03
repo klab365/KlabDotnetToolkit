@@ -10,6 +10,14 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.9.0
+
+### Changed
+
+* Update all Readme files to reflect the latest changes in the projects
+* ShouldLogEvents property in EventModule is defaulted to false
+* Remove Ensure method from Result class
+
 ## 2.8.2
 
 ### Changed

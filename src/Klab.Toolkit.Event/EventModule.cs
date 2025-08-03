@@ -65,7 +65,7 @@ public class EventModuleConfiguration
     /// <summary>
     /// Gets or sets a value indicating whether to log events
     /// </summary>
-    public bool ShouldLogEvents { get; set; } = true;
+    public bool ShouldLogEvents { get; set; }
 
     /// <summary>
     /// Gets or sets the event log file path
