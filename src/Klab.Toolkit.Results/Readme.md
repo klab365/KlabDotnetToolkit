@@ -185,6 +185,29 @@ IActionResult response = ProcessOrder(orderData).Match(
 
 **When to use**: Converting Results to other types, handling both cases explicitly, creating responses.
 
+## Async Support
+
+All major extension methods have async variants that work with `Task<Result<T>>` and `Task<Result>`. These methods use `ConfigureAwait(false)` for optimal performance in library scenarios.
+
+```csharp
+// Async method chaining
+Result<User> result = await GetUserIdAsync()
+    .BindAsync(async id => await GetUserAsync(id))
+    .MapAsync(async user => await EnrichUserAsync(user))
+    .OnSuccessAsync(async user => await LogUserAccessAsync(user))
+    .OnFailureAsync(async error => await NotifyAdministratorAsync(error));
+
+// Mixed sync and async operations
+Result<ProcessedData> result = await GetRawDataAsync()
+    .Map(data => ValidateData(data))           // Sync validation
+    .BindAsync(async data => await ProcessAsync(data))  // Async processing
+    .Map(data => FormatData(data));           // Sync formatting
+
+// Unwrap async results
+int value = await GetNumberAsync().UnwrapAsync();
+string name = await GetNameAsync().UnwrapOrAsync("Unknown");
+```
+
 ### ToResult - Wrap Values
 
 Convert regular values to Results.
@@ -211,12 +234,47 @@ Extract the value from a Result, throwing an exception if it's a failure.
 Result<int> result = Result.Success(42);
 int value = result.Unwrap(); // Returns 42
 
+// For void Results (just validation)
+Result voidResult = Result.Success();
+voidResult.Unwrap(); // Does not throw
+
 // This will throw an InvalidOperationException
 Result<int> failure = Result.Failure<int>(Error.Create("ERROR", "Something went wrong"));
 int value = failure.Unwrap(); // Throws exception
+
+// Async versions for Task<Result<T>>
+Task<Result<int>> resultTask = GetDataAsync();
+int value = await resultTask.UnwrapAsync(); // Returns value or throws
+
+Task<Result> voidResultTask = ProcessAsync();
+await voidResultTask.UnwrapAsync(); // Validates success or throws
 ```
 
-**When to use**: Rarely. Only when you're absolutely certain the Result is successful. Prefer `Match` or checking `IsSuccess`.
+### UnwrapOr - Extract Values with Default
+
+Extract the value from a Result, returning a default value if it's a failure.
+
+```csharp
+// Provide a default value for failures
+Result<int> result = GetNumber();
+int value = result.UnwrapOr(0); // Returns actual value or 0 if failed
+
+// Useful for optional data
+Result<string> nameResult = GetUserName(id);
+string displayName = nameResult.UnwrapOr("Anonymous");
+
+// Async version
+Task<Result<int>> resultTask = GetNumberAsync();
+int value = await resultTask.UnwrapOrAsync(0); // Returns value or default
+
+// Complex default values
+Result<User> userResult = GetUser(id);
+User user = userResult.UnwrapOr(new User { Name = "Guest", Id = -1 });
+```
+
+**When to use Unwrap**: Rarely. Only when you're absolutely certain the Result is successful. Prefer `Match` or checking `IsSuccess`.
+
+**When to use UnwrapOr**: When you have a sensible default value and want to continue processing even if the operation failed.
 
 ## Practical Examples
 
@@ -285,6 +343,36 @@ public async Task<Result<ProcessedData>> ProcessDataPipeline(RawData data)
         .BindAsync(async d => await SaveProcessedData(d))
         .OnSuccess(d => logger.LogInformation($"Processed {d.RecordCount} records"))
         .OnFailure(error => logger.LogError($"Pipeline failed at: {error.Code}"));
+}
+```
+
+### Configuration and Setup Pattern
+
+```csharp
+public class ApplicationSetup
+{
+    public async Task<int> InitializeApplicationAsync()
+    {
+        try
+        {
+            // Using UnwrapAsync for critical startup operations that must succeed
+            var config = await LoadConfigurationAsync().UnwrapAsync();
+            var database = await ConnectToDatabaseAsync(config.ConnectionString).UnwrapAsync();
+            await RunMigrationsAsync(database).UnwrapAsync();
+
+            // Using UnwrapOrAsync for optional features
+            var cacheSize = await LoadCacheConfigurationAsync().UnwrapOrAsync(100);
+            var logLevel = await LoadLogLevelAsync().UnwrapOrAsync(LogLevel.Information);
+
+            logger.LogInformation("Application initialized successfully");
+            return 0; // Success exit code
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogCritical($"Failed to initialize application: {ex.Message}");
+            return 1; // Error exit code
+        }
+    }
 }
 ```
 

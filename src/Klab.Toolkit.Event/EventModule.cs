@@ -14,7 +14,7 @@ public static class EventModule
     /// <param name="services"></param>
     /// <param name="configure" />
     /// <returns></returns>
-    public static IServiceCollection UseEventModule(this IServiceCollection services, Action<EventModuleConfiguration>? configure = default)
+    public static IServiceCollection AddEventModule(this IServiceCollection services, Action<EventModuleConfiguration>? configure = default)
     {
         EventModuleConfiguration configuration = new EventModuleConfiguration();
         configure?.Invoke(configuration);

@@ -18,7 +18,7 @@ public class StreamRequestResponseTests
             .ConfigureServices(services =>
             {
                 services.AddStreamRequestResponseHandler<SingRequest, string, SingRequestHandler>();
-                services.UseEventModule();
+                services.AddEventModule();
             })
             .Build();
 

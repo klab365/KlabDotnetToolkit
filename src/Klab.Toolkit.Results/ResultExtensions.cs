@@ -8,6 +8,7 @@ namespace Klab.Toolkit.Results;
 /// </summary>
 public static class ResultExtensions
 {
+    private const string UnwrapFailureMessage = "Cannot unwrap a failure result.";
     /// <summary>
     /// Maps the success value if the result is successful.
     /// </summary>
@@ -293,7 +294,70 @@ public static class ResultExtensions
     {
         return result.IsSuccess
             ? result.Value
-            : throw new InvalidOperationException("Cannot unwrap a failure result.");
+            : throw new InvalidOperationException(UnwrapFailureMessage);
+    }
+
+    /// <summary>
+    /// Ensures the result is successful, throwing an exception if it is a failure.
+    /// </summary>
+    /// <param name="result"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static void Unwrap(this Result result)
+    {
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException(UnwrapFailureMessage);
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves the value from a successful result, throwing an exception if it is a failure.
+    /// </summary>
+    public static async Task<T> UnwrapAsync<T>(this Task<Result<T>> resultTask) where T : notnull
+    {
+        Result<T> result = await resultTask.ConfigureAwait(false);
+        return result.IsSuccess
+            ? result.Value
+            : throw new InvalidOperationException(UnwrapFailureMessage);
+    }
+
+    /// <summary>
+    /// Asynchronously ensures the result is successful, throwing an exception if it is a failure.
+    /// </summary>
+    /// <param name="resultTask"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static async Task UnwrapAsync(this Task<Result> resultTask)
+    {
+        Result result = await resultTask.ConfigureAwait(false);
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException(UnwrapFailureMessage);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the value from a successful result, or returns the provided default value if it is a failure.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="result"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static T UnwrapOr<T>(this Result<T> result, T defaultValue) where T : notnull
+    {
+        return result.IsSuccess ? result.Value : defaultValue;
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves the value from a successful result, or returns the provided default value if it is a failure.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="resultTask"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    public static async Task<T> UnwrapOrAsync<T>(this Task<Result<T>> resultTask, T defaultValue) where T : notnull
+    {
+        Result<T> result = await resultTask.ConfigureAwait(false);
+        return result.IsSuccess ? result.Value : defaultValue;
     }
 
     /// <summary>

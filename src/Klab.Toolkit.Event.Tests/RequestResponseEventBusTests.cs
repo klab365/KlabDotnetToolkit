@@ -20,7 +20,7 @@ public class RequestResponseEventBusTests
             {
                 services.AddRequestResponseHandler<PingRequest, Result, PingRequestHandler>(ServiceLifetime.Singleton);
                 services.AddRequestResponseHandler<PingPongRequest, Result<string>, PingPongRequestHandler>();
-                services.UseEventModule();
+                services.AddEventModule();
             })
             .Build();
 

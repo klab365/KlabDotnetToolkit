@@ -10,6 +10,13 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.10.0
+
+### Changed
+
+* Add unwrap and unwrap async methods to ResultExtensions for better error handling
+* Refactor event module registration to use AddEventModule method
+
 ## 2.9.0
 
 ### Changed

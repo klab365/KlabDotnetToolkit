@@ -18,7 +18,7 @@ public sealed class ProcessEventTests
             .ConfigureServices(services =>
             {
                 services.AddStreamRequestResponseHandler<SingRequest, string, SingRequestHandler>();
-                services.UseEventModule();
+                services.AddEventModule();
             })
             .Build();
 
