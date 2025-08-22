@@ -9,32 +9,50 @@ on:
 jobs:
   format:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:9.0
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Install dotnet-format tool
-        run: dotnet tool install -g dotnet-format
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "9.0.x"
+
+      - uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
+
+      - name: Install tools
+        run: just setup
 
       - name: Run dotnet format
-        run: dotnet format --verify-no-changes -v diag
+        run: just check-format
 
   build-and-test:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:9.0
 
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "9.0.x"
+
+      - uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
+
+      - name: Install tools
+        run: just setup
+
       - name: Restore dependencies
-        run: dotnet restore
+        run: just restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: just build Release
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: just test ./tmp
+
+      - name: SonarQubeScan
+        uses: SonarSource/sonarqube-scan-action@bfd4e558cda28cda6b5defafb9232d191be8c203
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
