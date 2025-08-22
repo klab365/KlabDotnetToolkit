@@ -1,25 +1,43 @@
 set windows-shell := ["powershell"]
 
+setup:
+    dotnet tool install -g dotnet-format
+    dotnet tool install -g dotnet-coverage
+
 # add projects to solution
 add-projects:
     dotnet sln add ls -r **/*.csproj
 
-# build the solution
-build *args:
-    echo "Building..."
-    dotnet build {{args}}
+build configuration='Debug':
+    dotnet build -c {{configuration}}
 
 # clean the solution
+[linux]
 clean:
     echo "Cleaning..."
     dotnet clean
     find . -iname "bin" | xargs rm -rf
     find . -iname "obj" | xargs rm -rf
 
-# run the tests
-test:
-    dotnet test
+[windows]
+clean:
+    dotnet clean
+    Get-ChildItem -Recurse -Filter bin | ForEach-Object { Remove-Item $_.FullName -Recurse -Force }
+    Get-ChildItem -Recurse -Filter obj | ForEach-Object { Remove-Item $_.FullName -Recurse -Force }
+    Get-ChildItem -Recurse -Filter tmp | ForEach-Object { Remove-Item $_.FullName -Recurse -Force }
 
-# format the code
-format:
-    dotnet format -v diag
+# run the tests
+test reportPath="./tmp" *args='':
+    dotnet coverage \
+        collect -f xml \
+        -o {{reportPath}}/coverage.xml \
+        "dotnet test --logger:junit;MethodFormat=Class;LogFilePath={{reportPath}}/{assembly}.results.xml {{args}}"
+
+format *args='':
+    dotnet format --verbosity diagnostic {{args}}
+
+check-format:
+    just format --verify-no-changes
+
+restore:
+    dotnet restore

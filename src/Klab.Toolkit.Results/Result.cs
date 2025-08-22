@@ -38,7 +38,7 @@ public record Result
     /// </summary>
     public static Result Success()
     {
-        return new Result(true, Results.Error.None());
+        return new Result(true, Error.None);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public record Result
     /// <returns></returns>
     public static Result<T> Success<T>(T value) where T : notnull
     {
-        return new Result<T>(value, true, Error.None());
+        return new Result<T>(value, true, Error.None);
     }
 
     /// <summary>

@@ -8,8 +8,7 @@ This project is a part of the Klab.Toolkit solution and provides a robust error 
 
 - **`Result<T>`**: A generic class that represents the result of an operation with a value. It can be either a success (containing a value) or a failure (containing an error).
 - **`Result`**: A non-generic class that represents the result of an operation without a value. It can be either a success or a failure.
-- **`Error`**: A record that represents an error with properties like Code, Message, Advice, Type, and optional StackTrace.
-- **`ErrorType`**: An enum defining error severity levels: Info, Warning, Error, Fatal.
+- **`Error`**: A record that represents an error with properties like Code, Message, Advice, optional Exception, and support for nested errors.
 - **`ResultExtensions`**: A comprehensive set of extension methods that implement functional programming concepts like `Map`, `Bind`, `OnSuccess`, `OnFailure`, and `Match`.
 
 ## When to Use
@@ -59,6 +58,141 @@ if (result)
 {
     Console.WriteLine("Operation succeeded");
 }
+```
+
+## Error Handling
+
+The `Error` class is a fundamental part of the Result pattern, providing rich error information with support for hierarchical error structures.
+
+### Error Creation
+
+```csharp
+// Basic error creation
+Error error = Error.Create("USER_NOT_FOUND", "User with ID 123 was not found");
+
+// Error with advice
+Error detailedError = Error.Create(
+    code: "VALIDATION_FAILED",
+    message: "Email format is invalid",
+    advice: "Please provide a valid email address with @ symbol");
+
+// Convenience methods for common error types
+Error warning = Error.Warning("WARN001", "This is a warning", "Consider reviewing this");
+Error critical = Error.Critical("CRIT001", "System failure", "Immediate action required");
+Error failure = Error.Failure("ERR001", "Operation failed");
+Error debug = Error.Debug("DEBUG001", "Debug information");
+```
+
+### Error from Exception
+
+```csharp
+try
+{
+    // Some operation that might throw
+    DoSomethingRisky();
+}
+catch (ArgumentException ex)
+{
+    // Create error from exception with defaults
+    Error error = Error.FromException(ex);
+    // Code: "ArgumentException", Message: ex.Message
+
+    // Create error from exception with custom details
+    Error customError = Error.FromException(
+        exception: ex,
+        code: "ARG001",
+        advice: "Check your input parameters");
+
+    return Result.Failure<User>(customError);
+}
+```
+
+### Multiple Errors - Composite Error Handling
+
+When you have multiple errors from validation or processing, you can combine them into a single Error:
+
+#### Using Error.Multiple() - Simple Approach
+
+```csharp
+public Result<User> ValidateUser(CreateUserRequest request)
+{
+    var errors = new List<Error>();
+
+    if (string.IsNullOrEmpty(request.Name))
+        errors.Add(Error.Warning("VAL001", "Name is required"));
+
+    if (string.IsNullOrEmpty(request.Email))
+        errors.Add(Error.Warning("VAL002", "Email is required"));
+    else if (!request.Email.Contains("@"))
+        errors.Add(Error.Warning("VAL003", "Email format is invalid"));
+
+    if (request.Age < 18)
+        errors.Add(Error.Warning("VAL004", "Age must be 18 or older"));
+
+    // Combine all errors into one
+    if (errors.Count > 0)
+        return Result.Failure<User>(Error.Multiple(errors));
+
+    return Result.Success(new User(request.Name, request.Email, request.Age));
+}
+```
+
+#### Using Error.Composite() - Advanced Approach
+
+```csharp
+public Result<User> ValidateUserAdvanced(CreateUserRequest request)
+{
+    var errors = new List<Error>();
+
+    // ... collect errors as above ...
+
+    if (errors.Count > 0)
+    {
+        return Result.Failure<User>(Error.Composite(
+            code: "USER_VALIDATION_FAILED",
+            message: "User validation failed with multiple errors",
+            errors: errors,
+            advice: "Please fix all validation errors and try again"));
+    }
+
+    return Result.Success(new User(request.Name, request.Email, request.Age));
+}
+```
+
+### Examining Error Details
+
+```csharp
+Error compositeError = Error.Multiple(errors);
+
+// Check if error has nested errors
+if (compositeError.HasNestedErrors)
+{
+    Console.WriteLine($"This error contains {compositeError.NestedErrors.Count} nested errors");
+    Console.WriteLine($"Total error count (recursive): {compositeError.TotalErrorCount}");
+}
+
+// Get all errors flattened
+foreach (var error in compositeError.GetAllErrors())
+{
+    Console.WriteLine($"- {error.Code}: {error.Message}");
+}
+```
+
+### Error Properties
+
+```csharp
+Error error = Error.Warning("TEST001", "Test message", "Test advice");
+
+string code = error.Code;                    // "TEST001"
+string message = error.Message;              // "Test message"
+string advice = error.Advice;                // "Test advice"
+Exception? exception = error.Exception;      // null (no underlying exception)
+IReadOnlyList<Error> nested = error.NestedErrors; // Empty collection
+bool hasNested = error.HasNestedErrors;      // false
+int totalCount = error.TotalErrorCount;      // 1
+
+// String representations
+string basic = error.ToString();             // "TEST001: Test message (Advice: Test advice)"
 ```
 
 ## Extension Methods with Examples
