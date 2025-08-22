@@ -18,7 +18,7 @@ public class LocalFunctionEventBusTests
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.UseEventModule();
+                services.AddEventModule();
             })
             .Build();
 
@@ -81,6 +81,25 @@ public class LocalFunctionEventBusTests
         _counter.Should().Be(3);
         _eventBus.GetLocalEventHandlers().Count.Should().Be(1);
         _eventBus.GetLocalEventHandlers().First().Value.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Subscribe_ShouldRegisterSameMethodOnce_WhenSubscribeCalledTwice()
+    {
+        // arrange
+        _eventBus.Subscribe<TestEvent1>(IncreaseCounterAsync);
+        _eventBus.Subscribe<TestEvent1>(IncreaseCounterAsync);
+
+        // act
+        await _eventBus.PublishAsync(new TestEvent1());
+        await _eventBus.PublishAsync(new TestEvent1());
+        await Task.Delay(1000); // to be processed
+
+        _eventBus.Unsubscribe<TestEvent1>(IncreaseCounterAsync);
+        _eventBus.Unsubscribe<TestEvent1>(IncreaseCounterAsync);
+
+        // assert
+        _counter.Should().Be(2);
     }
 
     private Task<Result> IncreaseCounterAsync(TestEvent1 @event, CancellationToken cancellationToken)

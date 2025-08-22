@@ -20,7 +20,7 @@ public class InMemoryTests
             {
                 services.AddEventSubsribtion<TestEvent1, TestEventHandler1>(ServiceLifetime.Singleton);
                 services.AddEventSubsribtion<TestEvent1, TestEventHandler2>(ServiceLifetime.Singleton);
-                services.UseEventModule(cfg =>
+                services.AddEventModule(cfg =>
                 {
                     cfg.ShouldLogEvents = false;
                 });

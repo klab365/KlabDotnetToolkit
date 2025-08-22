@@ -255,4 +255,103 @@ public class ResultExtensionsTests
         result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>()
             .WithMessage("Cannot unwrap a failure result.");
     }
+
+    [Fact]
+    public void Unwrap_VoidResult_ShouldNotThrowOnSuccess()
+    {
+        Result result = Result.Success();
+
+        result.Invoking(r => r.Unwrap()).Should().NotThrow();
+    }
+
+    [Fact]
+    public void Unwrap_VoidResult_ShouldThrowExceptionOnFailure()
+    {
+        Result result = Result.Failure(Error.Create("ErrorCode", "Error"));
+
+        result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>()
+            .WithMessage("Cannot unwrap a failure result.");
+    }
+
+    [Fact]
+    public async Task UnwrapAsync_ShouldRetrieveValueOnSuccess()
+    {
+        Task<Result<int>> resultTask = Task.FromResult(Result.Success(42));
+
+        int value = await resultTask.UnwrapAsync();
+
+        value.Should().Be(42);
+    }
+
+    [Fact]
+    public async Task UnwrapAsync_ShouldThrowExceptionOnFailure()
+    {
+        Task<Result<int>> resultTask = Task.FromResult(Result.Failure<int>(Error.Create("ErrorCode", "Error")));
+
+        Func<Task> act = async () => await resultTask.UnwrapAsync();
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Cannot unwrap a failure result.");
+    }
+
+    [Fact]
+    public async Task UnwrapAsync_VoidResult_ShouldNotThrowOnSuccess()
+    {
+        Task<Result> resultTask = Task.FromResult(Result.Success());
+
+        Func<Task> act = async () => await resultTask.UnwrapAsync();
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task UnwrapAsync_VoidResult_ShouldThrowExceptionOnFailure()
+    {
+        Task<Result> resultTask = Task.FromResult(Result.Failure(Error.Create("ErrorCode", "Error")));
+
+        Func<Task> act = async () => await resultTask.UnwrapAsync();
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Cannot unwrap a failure result.");
+    }
+
+    [Fact]
+    public void UnwrapOr_ShouldRetrieveValueOnSuccess()
+    {
+        Result<int> result = Result.Success(42);
+
+        int value = result.UnwrapOr(99);
+
+        value.Should().Be(42);
+    }
+
+    [Fact]
+    public void UnwrapOr_ShouldReturnDefaultOnFailure()
+    {
+        Result<int> result = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
+
+        int value = result.UnwrapOr(99);
+
+        value.Should().Be(99);
+    }
+
+    [Fact]
+    public async Task UnwrapOrAsync_ShouldRetrieveValueOnSuccess()
+    {
+        Task<Result<int>> resultTask = Task.FromResult(Result.Success(42));
+
+        int value = await resultTask.UnwrapOrAsync(99);
+
+        value.Should().Be(42);
+    }
+
+    [Fact]
+    public async Task UnwrapOrAsync_ShouldReturnDefaultOnFailure()
+    {
+        Task<Result<int>> resultTask = Task.FromResult(Result.Failure<int>(Error.Create("ErrorCode", "Error")));
+
+        int value = await resultTask.UnwrapOrAsync(99);
+
+        value.Should().Be(99);
+    }
 }
