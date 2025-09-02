@@ -50,7 +50,7 @@ public class ResultTests
     }
 
     [Fact]
-    public void Implicit_Conversion_From_Result_To_Bool_Should_Work()
+    public void Result_Success_And_Failure_Properties_Should_Work()
     {
         // Arrange
         Result successResult = Result.Success();
@@ -76,13 +76,13 @@ public class ResultTests
     }
 
     [Fact]
-    public void Implicit_Conversion_From_Value_To_ResultT_Should_Create_Success()
+    public void Explicit_Conversion_From_Value_To_ResultT_Using_Success_Should_Work()
     {
         // Arrange
         int value = 42;
 
         // Act
-        Result<int> result = value;
+        Result<int> result = Result.Success(value);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -104,7 +104,7 @@ public class ResultTests
     }
 
     [Fact]
-    public void Implicit_Conversion_From_ResultT_To_Bool_Should_Work()
+    public void ResultT_Success_And_Failure_Properties_Should_Work()
     {
         // Arrange
         Result<int> successResult = Result.Success(100);
@@ -116,26 +116,26 @@ public class ResultTests
     }
 
     [Fact]
-    public void Implicit_Conversion_From_ResultT_To_Value_Should_Work_When_Successful()
+    public void Unwrap_From_ResultT_Should_Work_When_Successful()
     {
         // Arrange
         Result<int> result = Result.Success(123);
 
         // Act
-        int value = result;
+        int value = result.Unwrap();
 
         // Assert
         value.Should().Be(123);
     }
 
     [Fact]
-    public void Implicit_Conversion_From_ResultT_To_Value_Should_Throw_When_Failed()
+    public void Unwrap_From_ResultT_Should_Throw_When_Failed()
     {
         // Arrange
         Result<int> result = Result.Failure<int>(Error.Create("1", "error"));
 
         // Act & Assert
-        result.Invoking(r => { int x = r; }).Should().Throw<InvalidOperationException>();
+        result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>();
     }
 }
 

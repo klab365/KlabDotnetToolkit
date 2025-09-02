@@ -72,12 +72,6 @@ public record Result
     }
 
     /// <summary>
-    /// Implicit conversion from Result to bool
-    /// </summary>
-    /// <param name="result"></param>
-    public static implicit operator bool(Result result) => result.IsSuccess;
-
-    /// <summary>
     /// Implicit conversion error to Result
     /// </summary>
     public static implicit operator Result(Error error) => Failure(error);
@@ -98,27 +92,10 @@ public record Result<T> : Result where T : notnull
     public T Value => IsSuccess ? _value : throw new InvalidOperationException($"Cannot access value: operation failed with error: {Error}");
 
     /// <summary>
-    /// Implicit conversion from T to Result.
-    /// </summary>
-    public static implicit operator Result<T>(T value) => Success(value);
-
-    /// <summary>
     /// Implicit conversion from Error to Result (failure case)
     /// </summary>
     /// <param name="error"></param>
     public static implicit operator Result<T>(Error error) => Failure<T>(error);
-
-    /// <summary>
-    /// Implicit conversion from Result to bool
-    /// </summary>
-    /// <param name="result"></param>
-    public static implicit operator bool(Result<T> result) => result.IsSuccess;
-
-    /// <summary>
-    /// Implicit conversion from Result to T
-    /// </summary>
-    /// <param name="result"></param>
-    public static implicit operator T(Result<T> result) => result.Value;
 
     /// <summary>
     /// Protected constructor

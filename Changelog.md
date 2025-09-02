@@ -10,6 +10,20 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.11.0
+
+### Changed
+
+* Update Results README documentation to reflect removal of implicit operators and provide migration examples
+
+### Breaking Changes
+
+* **Result Pattern**: Removed implicit operators for converting values to `Result<T>` and `Result<T>` to values
+  - `Result<string> result = "value"` is no longer supported - use `Result<string> result = Result.Success("value")` instead
+  - `string value = result` is no longer supported - use `string value = result.Unwrap()` or `result.Match()` instead
+  - These changes improve type safety and make Result usage more explicit
+  - Error to Result implicit conversion still remains available
+
 ## 2.10.0
 
 ### Changed
