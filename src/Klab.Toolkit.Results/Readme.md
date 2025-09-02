@@ -34,8 +34,8 @@ Error error = Error.Create("USER_NOT_FOUND", "User with ID 123 was not found", "
 Result<User> failureWithValue = Result.Failure<User>(error);
 Result failure = Result.Failure(error);
 
-// Using implicit conversions
-Result<string> fromValue = "Hello World"; // Implicitly converted to Success
+// Using explicit conversions
+Result<string> fromValue = Result.Success("Hello World");
 Result<int> fromError = Error.Create("INVALID_INPUT", "Input is invalid"); // Implicitly converted to Failure
 ```
 
@@ -53,8 +53,8 @@ else
     Console.WriteLine($"Error: {result.Error.Message}");
 }
 
-// Or using implicit bool conversion
-if (result)
+// Or check result success using IsSuccess property
+if (result.IsSuccess)
 {
     Console.WriteLine("Operation succeeded");
 }
@@ -344,20 +344,20 @@ string name = await GetNameAsync().UnwrapOrAsync("Unknown");
 
 ### ToResult - Wrap Values
 
-Convert regular values to Results.
+Convert regular values to Results. This extension method provides an explicit way to wrap values in Result types for chaining operations.
 
 ```csharp
-// Wrap a value
+// Wrap a value explicitly
 int number = 42;
 Result<int> result = number.ToResult(); // Success(42)
 
-// Useful in method chains
+// Useful in method chains when you need to convert a value to Result
 Result<string> processed = GetData()
     .ToResult()
     .Map(data => ProcessData(data));
 ```
 
-**When to use**: When you need to convert a regular value to a Result for chaining.
+**When to use**: When you need to explicitly convert a regular value to a Result for chaining operations.
 
 ### Unwrap - Extract Values (Use with Caution)
 
@@ -545,5 +545,13 @@ public Result<User> GetUser(int id)
     if (id <= 0) return Error.Create("INVALID_ID", "User ID must be positive");
     // ... rest of method
 }
+
+// ❌ Don't do this - trying to use implicit conversions (no longer supported)
+Result<string> result = "Hello World"; // Compilation error
+string value = Result.Success("Hello"); // Compilation error
+
+// ✅ Do this instead - use explicit methods
+Result<string> result = Result.Success("Hello World");
+string value = Result.Success("Hello").Unwrap(); // Or better: use Match or UnwrapOr
 ```
 
