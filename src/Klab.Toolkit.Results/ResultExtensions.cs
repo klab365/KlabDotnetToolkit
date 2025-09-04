@@ -8,7 +8,6 @@ namespace Klab.Toolkit.Results;
 /// </summary>
 public static class ResultExtensions
 {
-    private const string UnwrapFailureMessage = "Cannot unwrap a failure result.";
     /// <summary>
     /// Maps the success value if the result is successful.
     /// </summary>
@@ -294,7 +293,7 @@ public static class ResultExtensions
     {
         return result.IsSuccess
             ? result.Value
-            : throw new InvalidOperationException(UnwrapFailureMessage);
+            : throw new InvalidOperationException(CreateUnwrapFailureMessage(result.Error));
     }
 
     /// <summary>
@@ -306,7 +305,7 @@ public static class ResultExtensions
     {
         if (!result.IsSuccess)
         {
-            throw new InvalidOperationException(UnwrapFailureMessage);
+            throw new InvalidOperationException(CreateUnwrapFailureMessage(result.Error));
         }
     }
 
@@ -318,7 +317,7 @@ public static class ResultExtensions
         Result<T> result = await resultTask.ConfigureAwait(false);
         return result.IsSuccess
             ? result.Value
-            : throw new InvalidOperationException(UnwrapFailureMessage);
+            : throw new InvalidOperationException(CreateUnwrapFailureMessage(result.Error));
     }
 
     /// <summary>
@@ -331,7 +330,7 @@ public static class ResultExtensions
         Result result = await resultTask.ConfigureAwait(false);
         if (!result.IsSuccess)
         {
-            throw new InvalidOperationException(UnwrapFailureMessage);
+            throw new InvalidOperationException(CreateUnwrapFailureMessage(result.Error));
         }
     }
 
@@ -389,5 +388,10 @@ public static class ResultExtensions
         {
             onFailure(result.Error);
         }
+    }
+
+    private static string CreateUnwrapFailureMessage(Error error)
+    {
+        return $"Cannot unwrap a failure result. Error Code: {error.Code}, Message: {error.Message}";
     }
 }
