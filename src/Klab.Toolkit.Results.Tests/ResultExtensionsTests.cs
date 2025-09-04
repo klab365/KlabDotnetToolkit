@@ -253,7 +253,7 @@ public class ResultExtensionsTests
         Result<int> result = Result.Failure<int>(Error.Create("ErrorCode", "Error"));
 
         result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>()
-            .WithMessage("Cannot unwrap a failure result.");
+            .WithMessage("Cannot unwrap a failure result. Error Code: ErrorCode, Message: Error");
     }
 
     [Fact]
@@ -270,7 +270,7 @@ public class ResultExtensionsTests
         Result result = Result.Failure(Error.Create("ErrorCode", "Error"));
 
         result.Invoking(r => r.Unwrap()).Should().Throw<InvalidOperationException>()
-            .WithMessage("Cannot unwrap a failure result.");
+            .WithMessage("Cannot unwrap a failure result. Error Code: ErrorCode, Message: Error");
     }
 
     [Fact]
@@ -291,7 +291,7 @@ public class ResultExtensionsTests
         Func<Task> act = async () => await resultTask.UnwrapAsync();
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Cannot unwrap a failure result.");
+            .WithMessage("Cannot unwrap a failure result. Error Code: ErrorCode, Message: Error");
     }
 
     [Fact]
@@ -312,7 +312,7 @@ public class ResultExtensionsTests
         Func<Task> act = async () => await resultTask.UnwrapAsync();
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Cannot unwrap a failure result.");
+            .WithMessage("Cannot unwrap a failure result. Error Code: ErrorCode, Message: Error");
     }
 
     [Fact]

@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.11.1
+
+### Changed
+
+* Unwrap methods now return more detailed error messages including the error details when unwrapping fails
+
 ## 2.11.0
 
 ### Changed
