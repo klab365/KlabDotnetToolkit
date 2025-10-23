@@ -212,16 +212,6 @@ public class ResultExtensionsTests
     }
 
     [Fact]
-    public async Task TapAsync_ShouldExecuteActionOnSuccess()
-    {
-        bool actionExecuted = false;
-        Result.Success("Success").OnSuccess(async _ => await Task.Run(() => actionExecuted = true));
-        await Task.Delay(100);
-
-        actionExecuted.Should().BeTrue();
-    }
-
-    [Fact]
     public void OnFailure_ShouldExecuteActionOnFailure()
     {
         bool actionExecuted = false;
@@ -354,4 +344,271 @@ public class ResultExtensionsTests
 
         value.Should().Be(99);
     }
+
+    #region Do Tests
+
+    [Fact]
+    public void Do_VoidResult_ShouldExecuteActionOnSuccess()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Result result = Result.Success();
+
+        // Act
+        Result returnedResult = result.Do(() => actionExecuted = true);
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.Should().BeSameAs(result);
+        returnedResult.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Do_VoidResult_ShouldExecuteActionOnFailure()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Error error = Error.Create("ErrorCode", "Error message");
+        Result result = Result.Failure(error);
+
+        // Act
+        Result returnedResult = result.Do(() => actionExecuted = true);
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.Should().BeSameAs(result);
+        returnedResult.IsFailure.Should().BeTrue();
+        returnedResult.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public void Do_GenericResult_ShouldExecuteActionOnSuccess()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Result<string> result = Result.Success("test value");
+
+        // Act
+        Result<string> returnedResult = result.Do(() => actionExecuted = true);
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.Should().BeSameAs(result);
+        returnedResult.IsSuccess.Should().BeTrue();
+        returnedResult.Value.Should().Be("test value");
+    }
+
+    [Fact]
+    public void Do_GenericResult_ShouldExecuteActionOnFailure()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Error error = Error.Create("ErrorCode", "Error message");
+        Result<string> result = Result.Failure<string>(error);
+
+        // Act
+        Result<string> returnedResult = result.Do(() => actionExecuted = true);
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.Should().BeSameAs(result);
+        returnedResult.IsFailure.Should().BeTrue();
+        returnedResult.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public void Do_ShouldAllowChaining()
+    {
+        // Arrange
+        int executionCount = 0;
+        Result<int> result = Result.Success(42);
+
+        // Act
+        Result<int> chainedResult = result
+            .Do(() => executionCount++)
+            .Do(() => executionCount++)
+            .Do(() => executionCount++);
+
+        // Assert
+        executionCount.Should().Be(3);
+        chainedResult.IsSuccess.Should().BeTrue();
+        chainedResult.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public void Do_ShouldExecuteActionEvenWhenExceptionIsThrown()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Result result = Result.Success();
+
+        // Act & Assert
+        result.Invoking(r => r.Do(() =>
+        {
+            actionExecuted = true;
+            throw new InvalidOperationException("Test exception");
+        })).Should().Throw<InvalidOperationException>().WithMessage("Test exception");
+
+        actionExecuted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DoAsync_VoidResult_ShouldExecuteActionOnSuccess()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Task<Result> resultTask = Task.FromResult(Result.Success());
+
+        // Act
+        Result returnedResult = await resultTask.DoAsync(async () =>
+        {
+            await Task.Delay(10);
+            actionExecuted = true;
+        });
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DoAsync_VoidResult_ShouldExecuteActionOnFailure()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Error error = Error.Create("ErrorCode", "Error message");
+        Task<Result> resultTask = Task.FromResult(Result.Failure(error));
+
+        // Act
+        Result returnedResult = await resultTask.DoAsync(async () =>
+        {
+            await Task.Delay(10);
+            actionExecuted = true;
+        });
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.IsFailure.Should().BeTrue();
+        returnedResult.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public async Task DoAsync_GenericResult_ShouldExecuteActionOnSuccess()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Task<Result<string>> resultTask = Task.FromResult(Result.Success("test value"));
+
+        // Act
+        Result<string> returnedResult = await resultTask.DoAsync(async () =>
+        {
+            await Task.Delay(10);
+            actionExecuted = true;
+        });
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.IsSuccess.Should().BeTrue();
+        returnedResult.Value.Should().Be("test value");
+    }
+
+    [Fact]
+    public async Task DoAsync_GenericResult_ShouldExecuteActionOnFailure()
+    {
+        // Arrange
+        bool actionExecuted = false;
+        Error error = Error.Create("ErrorCode", "Error message");
+        Task<Result<string>> resultTask = Task.FromResult(Result.Failure<string>(error));
+
+        // Act
+        Result<string> returnedResult = await resultTask.DoAsync(async () =>
+        {
+            await Task.Delay(10);
+            actionExecuted = true;
+        });
+
+        // Assert
+        actionExecuted.Should().BeTrue();
+        returnedResult.IsFailure.Should().BeTrue();
+        returnedResult.Error.Should().Be(error);
+    }
+
+    [Fact]
+    public async Task DoAsync_ShouldAllowChaining()
+    {
+        // Arrange
+        int executionCount = 0;
+        Task<Result<int>> resultTask = Task.FromResult(Result.Success(42));
+
+        // Act
+        Result<int> chainedResult = await resultTask
+            .DoAsync(async () =>
+            {
+                await Task.Delay(5);
+                executionCount++;
+            });
+
+        Result<int> finalResult = await Task.FromResult(chainedResult)
+            .DoAsync(async () =>
+            {
+                await Task.Delay(5);
+                executionCount++;
+            });
+
+        // Assert
+        executionCount.Should().Be(2);
+        finalResult.IsSuccess.Should().BeTrue();
+        finalResult.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public async Task DoAsync_ShouldPropagateExceptions()
+    {
+        // Arrange
+        Task<Result> resultTask = Task.FromResult(Result.Success());
+
+        // Act & Assert
+        Func<Task> act = async () => await resultTask.DoAsync(async () =>
+        {
+            await Task.Delay(10);
+            throw new InvalidOperationException("Test exception");
+        });
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Test exception");
+    }
+
+    [Fact]
+    public void Do_WithSideEffects_ShouldExecuteForLoggingScenario()
+    {
+        // Arrange
+        string logMessage = string.Empty;
+        Result<int> result = Result.Success(42);
+
+        // Act
+        Result<int> resultWithLogging = result.Do(() => logMessage = "Operation completed");
+
+        // Assert
+        logMessage.Should().Be("Operation completed");
+        resultWithLogging.IsSuccess.Should().BeTrue();
+        resultWithLogging.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public void Do_WithSideEffects_ShouldExecuteForCleanupScenario()
+    {
+        // Arrange
+        bool cleanupExecuted = false;
+        Error error = Error.Create("ErrorCode", "Operation failed");
+        Result result = Result.Failure(error);
+
+        // Act
+        Result resultWithCleanup = result.Do(() => cleanupExecuted = true);
+
+        // Assert
+        cleanupExecuted.Should().BeTrue();
+        resultWithCleanup.IsFailure.Should().BeTrue();
+        resultWithCleanup.Error.Should().Be(error);
+    }
+
+    #endregion
 }

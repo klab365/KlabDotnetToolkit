@@ -390,6 +390,56 @@ public static class ResultExtensions
         }
     }
 
+    /// <summary>
+    /// Executes an action regardless of success or failure without modifying the result and returns the original result.
+    /// Useful for side effects that should always occur (e.g., logging, cleanup).
+    /// </summary>
+    public static Result Do(
+        this Result result,
+        Action action)
+    {
+        action();
+        return result;
+    }
+
+    /// <summary>
+    /// Executes an action regardless of success or failure without modifying the result and returns the original result.
+    /// Useful for side effects that should always occur (e.g., logging, cleanup).
+    /// </summary>
+    public static Result<T> Do<T>(
+        this Result<T> result,
+        Action action) where T : notnull
+    {
+        action();
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously executes an action regardless of success or failure without modifying the result and returns the original result.
+    /// Useful for side effects that should always occur (e.g., logging, cleanup).
+    /// </summary>
+    public static async Task<Result> DoAsync(
+        this Task<Result> resultTask,
+        Func<Task> action)
+    {
+        Result result = await resultTask.ConfigureAwait(false);
+        await action().ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Asynchronously executes an action regardless of success or failure without modifying the result and returns the original result.
+    /// Useful for side effects that should always occur (e.g., logging, cleanup).
+    /// </summary>
+    public static async Task<Result<T>> DoAsync<T>(
+        this Task<Result<T>> resultTask,
+        Func<Task> action) where T : notnull
+    {
+        Result<T> result = await resultTask.ConfigureAwait(false);
+        await action().ConfigureAwait(false);
+        return result;
+    }
+
     private static string CreateUnwrapFailureMessage(Error error)
     {
         return $"Cannot unwrap a failure result. Error Code: {error.Code}, Message: {error.Message}";

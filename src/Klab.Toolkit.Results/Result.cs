@@ -95,7 +95,10 @@ public record Result<T> : Result where T : notnull
     /// Implicit conversion from Error to Result (failure case)
     /// </summary>
     /// <param name="error"></param>
-    public static implicit operator Result<T>(Error error) => Failure<T>(error);
+    public static implicit operator Result<T>(Error error)
+    {
+        return Failure<T>(error);
+    }
 
     /// <summary>
     /// Protected constructor
