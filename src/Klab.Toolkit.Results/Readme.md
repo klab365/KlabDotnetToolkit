@@ -9,7 +9,7 @@ This project is a part of the Klab.Toolkit solution and provides a robust error 
 - **`Result<T>`**: A generic class that represents the result of an operation with a value. It can be either a success (containing a value) or a failure (containing an error).
 - **`Result`**: A non-generic class that represents the result of an operation without a value. It can be either a success or a failure.
 - **`Error`**: A record that represents an error with properties like Code, Message, Advice, optional Exception, and support for nested errors.
-- **`ResultExtensions`**: A comprehensive set of extension methods that implement functional programming concepts like `Map`, `Bind`, `OnSuccess`, `OnFailure`, and `Match`.
+- **`ResultExtensions`**: A comprehensive set of extension methods that implement functional programming concepts like `Map`, `Bind`, `OnSuccess`, `OnFailure`, `Do`, and `Match`.
 
 ## When to Use
 
@@ -408,7 +408,68 @@ User user = userResult.UnwrapOr(new User { Name = "Guest", Id = -1 });
 
 **When to use Unwrap**: Rarely. Only when you're absolutely certain the Result is successful. Prefer `Match` or checking `IsSuccess`.
 
-**When to use UnwrapOr**: When you have a sensible default value and want to continue processing even if the operation failed.
+**When to use**: When you have a sensible default value and want to continue processing even if the operation failed.
+
+### Do - Execute Side Effects for Both Success and Failure
+
+Use `Do` when you want to perform actions (like logging, cleanup, monitoring) that should execute regardless of whether the Result is successful or failed.
+
+```csharp
+// Simple side effect - always executes
+Result<User> result = GetUser(id)
+    .Do(() => Console.WriteLine("GetUser operation completed"));
+
+// Logging both success and failure cases
+Result<Order> orderResult = CreateOrder(orderData)
+    .Do(() => logger.LogInformation("Order creation attempt completed"))
+    .OnSuccess(order => logger.LogInformation($"Order {order.Id} created successfully"))
+    .OnFailure(error => logger.LogError($"Order creation failed: {error.Message}"));
+
+// Cleanup operations that must always run
+Result<FileData> fileResult = ProcessFile(filePath)
+    .Do(() => CleanupTempFiles())  // Always cleanup, regardless of success/failure
+    .Do(() => UpdateMetrics());   // Always update metrics
+
+// Multiple Do operations can be chained
+Result<ProcessedData> result = ProcessData(rawData)
+    .Do(() => performance.MarkStart())
+    .Map(data => TransformData(data))
+    .Do(() => performance.MarkEnd())
+    .Do(() => auditLogger.LogOperation("DataProcessing"));
+
+// Async version - useful for async side effects
+Result<Payment> payment = await ProcessPayment(paymentData)
+    .DoAsync(async () => await UpdatePaymentMetrics())
+    .DoAsync(async () => await NotifyPaymentGateway());
+
+// Practical example: Database transaction with cleanup
+Result<Order> result = await BeginTransaction()
+    .BindAsync(async tx => await CreateOrderInTransaction(orderData, tx))
+    .Do(() => CommitOrRollbackTransaction())  // Always handle transaction
+    .Do(() => CloseConnection())              // Always close connection
+    .OnSuccess(order => logger.LogInformation($"Order {order.Id} committed"))
+    .OnFailure(error => logger.LogError($"Transaction rolled back: {error.Message}"));
+```
+
+**When to use `Do`**:
+- **Always-execute operations**: Cleanup, resource disposal, metrics collection
+- **Audit logging**: Recording that an operation was attempted (regardless of outcome)
+- **Performance monitoring**: Start/stop timers, profiling markers
+- **Resource management**: Closing connections, files, disposing objects
+- **Side effects that must happen**: Notifications, cache invalidation, etc.
+
+**Key characteristics**:
+- **Always executes**: Runs for both success and failure cases
+- **Non-modifying**: Returns the original Result unchanged
+- **Chainable**: Can be used multiple times in a chain
+- **Exception propagation**: Any exceptions thrown in the action will be propagated
+
+**Comparison with other extension methods**:
+- `OnSuccess`: Only executes on success
+- `OnFailure`: Only executes on failure
+- `Do`: Always executes (both success and failure)
+- `Map`: Transforms the value (only on success)
+- `Bind`: Chains operations that can fail (only on success)
 
 ## Practical Examples
 
@@ -420,12 +481,15 @@ public class UserService
     public async Task<Result<User>> CreateUserAsync(CreateUserRequest request)
     {
         return await Result.Success(request)
+            .Do(() => logger.LogInformation($"Starting user creation for email: {request.Email}"))
             .Bind(req => ValidateRequest(req))
             .BindAsync(async req => await CheckEmailUniqueness(req.Email))
             .BindAsync(async req => await HashPassword(req.Password))
             .BindAsync(async req => await SaveUserAsync(req))
+            .Do(() => auditLogger.LogUserCreationAttempt(request.Email))  // Always log attempt
             .OnSuccessAsync(async user => await SendWelcomeEmailAsync(user))
-            .OnFailure(error => logger.LogError($"User creation failed: {error.Message}"));
+            .OnFailure(error => logger.LogError($"User creation failed: {error.Message}"))
+            .Do(() => performance.RecordUserCreationMetrics());  // Always record metrics
     }
 
     private Result<CreateUserRequest> ValidateRequest(CreateUserRequest request)
@@ -471,11 +535,15 @@ public class UsersController : ControllerBase
 public async Task<Result<ProcessedData>> ProcessDataPipeline(RawData data)
 {
     return await Result.Success(data)
+        .Do(() => performanceCounter.StartTimer("DataProcessing"))
         .Bind(d => ValidateData(d))
         .BindAsync(async d => await EnrichData(d))
+        .Do(() => logger.LogInformation("Data enrichment phase completed"))
         .Map(d => TransformData(d))
         .BindAsync(async d => await SaveProcessedData(d))
-        .OnSuccess(d => logger.LogInformation($"Processed {d.RecordCount} records"))
+        .Do(() => performanceCounter.StopTimer("DataProcessing"))  // Always stop timer
+        .Do(() => CleanupTempResources())  // Always cleanup
+        .OnSuccess(d => logger.LogInformation($"Processed {d.RecordCount} records successfully"))
         .OnFailure(error => logger.LogError($"Pipeline failed at: {error.Code}"));
 }
 ```
