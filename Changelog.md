@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.13.1
+
+### Fixed
+
+* **JobProcessor**: catch OperationCanceledException in worker task to prevent logging errors on cancellation
+
 ## 2.13.0
 
 ### Added
