@@ -55,7 +55,14 @@ public sealed class JobProcessor<T> : IDisposable, IJobProcessor<T>
             return;
         }
 
-        await _channel.Writer.WriteAsync(job, cancellationToken);
+        try
+        {
+            await _channel.Writer.WriteAsync(job, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore cancellation exceptions
+        }
     }
 
     /// <inheritdoc/>
@@ -69,7 +76,15 @@ public sealed class JobProcessor<T> : IDisposable, IJobProcessor<T>
 
         foreach (T job in jobs)
         {
-            await _channel.Writer.WriteAsync(job, cancellationToken);
+            try
+            {
+                await _channel.Writer.WriteAsync(job, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation exceptions
+                break;
+            }
         }
     }
 
@@ -81,7 +96,14 @@ public sealed class JobProcessor<T> : IDisposable, IJobProcessor<T>
 
         if (_workerTask != null)
         {
-            await _workerTask;
+            try
+            {
+                await _workerTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation exceptions
+            }
         }
     }
 
@@ -98,6 +120,10 @@ public sealed class JobProcessor<T> : IDisposable, IJobProcessor<T>
             try
             {
                 await _jobHandler(job, _cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Ignore cancellation exceptions
             }
             catch (Exception ex)
             {
