@@ -10,6 +10,18 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.13.0
+
+### Added
+
+* **JobProcessor**: Add comprehensive unit tests for `JobProcessor<T>` using xUnit, NSubstitute, and FluentAssertions
+
+### Changed
+
+* **JobProcessor**: Refactor initialization to start worker task in `Init()` method instead of constructor
+  - Worker task now starts only after handler is set, preventing race conditions
+  - Improved error handling when jobs are enqueued before initialization
+
 ## 2.12.0
 
 ### Added
