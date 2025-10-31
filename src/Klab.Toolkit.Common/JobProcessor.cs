@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -10,12 +11,12 @@ namespace Klab.Toolkit.Common;
 /// A generic job processor that processes jobs in a background worker.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed class JobProcessor<T> : IDisposable
+public sealed class JobProcessor<T> : IDisposable, IJobProcessor<T>
 {
     private readonly Channel<T> _channel;
-    private Func<T, Task>? _jobHandler; // Nullable until initialized
+    private Func<T, CancellationToken, Task>? _jobHandler; // Nullable until initialized
     private readonly CancellationTokenSource _cts = new();
-    private readonly Task _workerTask;
+    private Task? _workerTask;
     private readonly ILogger<JobProcessor<T>> _logger;
 
     /// <summary>
@@ -23,8 +24,7 @@ public sealed class JobProcessor<T> : IDisposable
     /// </summary>
     public JobProcessor(ILogger<JobProcessor<T>> logger)
     {
-        _channel = Channel.CreateUnbounded<T>();
-        _workerTask = Task.Run(ProcessJobsAsync);
+        _channel = Channel.CreateBounded<T>(1000);
         _logger = logger;
     }
 
@@ -33,9 +33,10 @@ public sealed class JobProcessor<T> : IDisposable
     /// </summary>
     /// <param name="jobHandler"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    public void Init(Func<T, Task> jobHandler)
+    public void Init(Func<T, CancellationToken, Task> jobHandler)
     {
         _jobHandler = jobHandler ?? throw new ArgumentNullException(nameof(jobHandler));
+        _workerTask = Task.Run(ProcessJobsAsync);
     }
 
     /// <inheritdoc/>
@@ -45,13 +46,8 @@ public sealed class JobProcessor<T> : IDisposable
         _cts.Dispose();
     }
 
-    /// <summary>
-    /// Enqueues a job to be processed.
-    /// </summary>
-    /// <param name="job"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public async Task EnqueueAsync(T job)
+    /// <inheritdoc/>
+    public async Task EnqueueAsync(T job, CancellationToken cancellationToken = default)
     {
         if (_jobHandler == null)
         {
@@ -59,18 +55,34 @@ public sealed class JobProcessor<T> : IDisposable
             return;
         }
 
-        await _channel.Writer.WriteAsync(job);
+        await _channel.Writer.WriteAsync(job, cancellationToken);
     }
 
-    /// <summary>
-    /// Stops the job processor.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
+    public async Task EnqueueAsync(IEnumerable<T> jobs, CancellationToken cancellationToken = default)
+    {
+        if (_jobHandler == null)
+        {
+            _logger.LogError("JobProcessor received jobs but has no handler set.");
+            return;
+        }
+
+        foreach (T job in jobs)
+        {
+            await _channel.Writer.WriteAsync(job, cancellationToken);
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task StopAsync()
     {
         _channel.Writer.Complete();
         _cts.Cancel();
-        await _workerTask;
+
+        if (_workerTask != null)
+        {
+            await _workerTask;
+        }
     }
 
     private async Task ProcessJobsAsync()
@@ -79,13 +91,13 @@ public sealed class JobProcessor<T> : IDisposable
         {
             if (_jobHandler == null)
             {
-                _logger.LogInformation("JobProcessor received a job but has no handler set.");
+                _logger.LogWarning("JobProcessor received a job but has no handler set.");
                 continue;
             }
 
             try
             {
-                await _jobHandler(job);
+                await _jobHandler(job, _cts.Token);
             }
             catch (Exception ex)
             {

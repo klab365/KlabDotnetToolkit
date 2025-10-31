@@ -20,7 +20,7 @@ The primary purpose of the `Klab.Toolkit.Common` package is to:
 - **`ITimeProvider`**: Abstracts system time operations for testable time-dependent code
 - **`ITaskProvider`**: Provides thread-safe task and locking operations
 - **`IRetryService`**: Implements configurable retry policies with exponential backoff
-- **`JobProcessor<T>`**: Generic background job processing with channels
+- **`JobProcessor<T>`**: Generic background job processing with channels and error handling
 
 ### Utility Classes
 
@@ -306,9 +306,75 @@ public class ResourceManager
 
 ### JobProcessor<T> - Background Job Processing
 
-The `JobProcessor<T>` provides high-performance background job processing using .NET channels.
+The `JobProcessor<T>` provides high-performance background job processing using .NET channels with automatic error handling and logging.
 
-#### Usage Examples
+#### Features
+
+- **Asynchronous Processing**: Jobs are processed in the background without blocking
+- **Error Handling**: Exceptions are caught and logged, processing continues with next job
+- **Cancellation Support**: Respects cancellation tokens for graceful shutdown
+- **Type-Safe**: Generic implementation works with any job type
+- **Thread-Safe**: Built on .NET channels for concurrent enqueueing
+
+#### Interface
+
+```csharp
+public interface IJobProcessor<T>
+{
+    Task EnqueueAsync(T job, CancellationToken cancellationToken = default);
+    Task EnqueueAsync(IEnumerable<T> jobs, CancellationToken cancellationToken = default);
+    void Init(Func<T, CancellationToken, Task> jobHandler);
+    Task StopAsync();
+}
+```
+
+#### Basic Usage
+
+```csharp
+public class EmailService
+{
+    private readonly JobProcessor<EmailJob> _emailProcessor;
+    private readonly IEmailClient _emailClient;
+
+    public EmailService(
+        ILogger<JobProcessor<EmailJob>> logger,
+        IEmailClient emailClient)
+    {
+        _emailClient = emailClient;
+        _emailProcessor = new JobProcessor<EmailJob>(logger);
+        
+        // Initialize with handler function
+        _emailProcessor.Init(ProcessEmailAsync);
+    }
+
+    public async Task QueueEmailAsync(string to, string subject, string body)
+    {
+        var emailJob = new EmailJob(to, subject, body);
+        await _emailProcessor.EnqueueAsync(emailJob);
+    }
+
+    public async Task QueueBulkEmailsAsync(IEnumerable<EmailJob> emails)
+    {
+        await _emailProcessor.EnqueueAsync(emails);
+    }
+
+    private async Task ProcessEmailAsync(EmailJob job, CancellationToken ct)
+    {
+        await _emailClient.SendAsync(job.To, job.Subject, job.Body, ct);
+        Console.WriteLine($"Email sent to {job.To}: {job.Subject}");
+    }
+
+    public async Task ShutdownAsync()
+    {
+        await _emailProcessor.StopAsync();
+        _emailProcessor.Dispose();
+    }
+}
+
+public record EmailJob(string To, string Subject, string Body);
+```
+
+#### Advanced Usage Examples
 
 ```csharp
 public class EmailService
@@ -345,7 +411,176 @@ public class EmailService
 public record EmailJob(string To, string Subject, string Body);
 ```
 
-#### Advanced Job Processing
+#### Advanced Usage Examples
+
+**Order Processing with Database Operations**
+
+```csharp
+public class OrderProcessingService
+{
+    private readonly JobProcessor<OrderProcessingJob> _orderProcessor;
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentService _paymentService;
+    private readonly IInventoryService _inventoryService;
+
+    public OrderProcessingService(
+        ILogger<JobProcessor<OrderProcessingJob>> logger,
+        IOrderRepository orderRepository,
+        IPaymentService paymentService,
+        IInventoryService inventoryService)
+    {
+        _orderRepository = orderRepository;
+        _paymentService = paymentService;
+        _inventoryService = inventoryService;
+        
+        _orderProcessor = new JobProcessor<OrderProcessingJob>(logger);
+        _orderProcessor.Init(ProcessOrderAsync);
+    }
+
+    public async Task EnqueueOrderProcessingAsync(Guid orderId)
+    {
+        await _orderProcessor.EnqueueAsync(new OrderProcessingJob(orderId));
+    }
+
+    private async Task ProcessOrderAsync(OrderProcessingJob job, CancellationToken ct)
+    {
+        var order = await _orderRepository.GetByIdAsync(job.OrderId, ct);
+        if (order == null)
+        {
+            Console.WriteLine($"Order {job.OrderId} not found");
+            return;
+        }
+
+        // Process payment
+        var paymentResult = await _paymentService.ProcessPaymentAsync(order.Payment, ct);
+        if (!paymentResult.IsSuccess)
+        {
+            order.MarkAsFailed(paymentResult.Error.Message);
+            await _orderRepository.UpdateAsync(order, ct);
+            return;
+        }
+
+        // Update inventory
+        foreach (var item in order.Items)
+        {
+            await _inventoryService.DecrementStockAsync(item.ProductId, item.Quantity, ct);
+        }
+
+        order.MarkAsCompleted();
+        await _orderRepository.UpdateAsync(order, ct);
+    }
+}
+
+public record OrderProcessingJob(Guid OrderId);
+```
+
+**Image Processing Pipeline**
+
+```csharp
+public class ImageProcessingService
+{
+    private readonly JobProcessor<ImageProcessingJob> _imageProcessor;
+    private readonly IStorageService _storageService;
+
+    public ImageProcessingService(
+        ILogger<JobProcessor<ImageProcessingJob>> logger,
+        IStorageService storageService)
+    {
+        _storageService = storageService;
+        _imageProcessor = new JobProcessor<ImageProcessingJob>(logger);
+        _imageProcessor.Init(ProcessImageAsync);
+    }
+
+    public async Task QueueImageProcessingAsync(string imageUrl, ImageSize[] sizes)
+    {
+        await _imageProcessor.EnqueueAsync(
+            new ImageProcessingJob(imageUrl, sizes)
+        );
+    }
+
+    private async Task ProcessImageAsync(ImageProcessingJob job, CancellationToken ct)
+    {
+        // Download original image
+        var imageData = await _storageService.DownloadAsync(job.ImageUrl, ct);
+
+        foreach (var size in job.Sizes)
+        {
+            // Resize image
+            var resized = await ResizeImageAsync(imageData, size.Width, size.Height, ct);
+            
+            // Upload resized version
+            var fileName = $"{Path.GetFileNameWithoutExtension(job.ImageUrl)}_{size.Name}.jpg";
+            await _storageService.UploadAsync(fileName, resized, ct);
+        }
+    }
+
+    private async Task<byte[]> ResizeImageAsync(
+        byte[] imageData, 
+        int width, 
+        int height, 
+        CancellationToken ct)
+    {
+        // Image resizing logic
+        await Task.Delay(100, ct); // Simulate work
+        return imageData;
+    }
+}
+
+public record ImageProcessingJob(string ImageUrl, ImageSize[] Sizes);
+public record ImageSize(string Name, int Width, int Height);
+```
+
+#### Error Handling
+
+The `JobProcessor<T>` automatically catches and logs exceptions without stopping the processing pipeline:
+
+```csharp
+private async Task ProcessJobAsync(MyJob job, CancellationToken ct)
+{
+    // If this throws an exception, it will be logged and processing continues
+    await SomeOperationThatMightFailAsync(job, ct);
+}
+
+// Logged output:
+// [Error] An error occurred while processing a job.
+// System.InvalidOperationException: Something went wrong
+//   at ...
+```
+
+#### Graceful Shutdown
+
+```csharp
+public class WorkerService : BackgroundService
+{
+    private readonly JobProcessor<WorkItem> _processor;
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Process jobs until cancellation
+        stoppingToken.Register(async () => await _processor.StopAsync());
+        
+        // Keep service running
+        await Task.Delay(Timeout.Infinite, stoppingToken);
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Gracefully stop processing
+        await _processor.StopAsync();
+        _processor.Dispose();
+        
+        await base.StopAsync(cancellationToken);
+    }
+}
+```
+
+#### Best Practices
+
+1. **Initialization**: Always call `Init()` before enqueueing jobs
+2. **Lifecycle**: Dispose of the processor when shutting down
+3. **Handler Implementation**: Keep handlers focused and handle exceptions appropriately
+4. **Cancellation**: Respect the cancellation token in your handler
+5. **Job Design**: Use records or immutable types for job data
 
 ```csharp
 public class OrderProcessingService
@@ -371,28 +606,28 @@ public class OrderProcessingService
         await _orderProcessor.EnqueueAsync(new OrderProcessingJob(orderId));
     }
 
-    private async Task ProcessOrderAsync(OrderProcessingJob job)
+    private async Task ProcessOrderAsync(OrderProcessingJob job, CancellationToken ct)
     {
-        var order = await _orderRepository.GetByIdAsync(job.OrderId);
+        var order = await _orderRepository.GetByIdAsync(job.OrderId, ct);
         if (order == null) return;
 
         // Process payment
-        var paymentResult = await _paymentService.ProcessPaymentAsync(order.Payment);
+        var paymentResult = await _paymentService.ProcessPaymentAsync(order.Payment, ct);
         if (!paymentResult.IsSuccess)
         {
             order.MarkAsFailed(paymentResult.Error.Message);
-            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.UpdateAsync(order, ct);
             return;
         }
 
         // Update inventory
         foreach (var item in order.Items)
         {
-            await UpdateInventoryAsync(item);
+            await UpdateInventoryAsync(item, ct);
         }
 
         order.MarkAsCompleted();
-        await _orderRepository.UpdateAsync(order);
+        await _orderRepository.UpdateAsync(order, ct);
     }
 }
 
@@ -459,6 +694,12 @@ public class UserService
         // Implementation for sending notifications
         await Task.Delay(100); // Simulate work
     }
+
+    public async Task ShutdownAsync()
+    {
+        await _notificationProcessor.StopAsync();
+        _notificationProcessor.Dispose();
+    }
 }
 
 public record UserNotificationJob(Guid UserId, NotificationType Type);
@@ -522,9 +763,11 @@ public class UserServiceTests
 
 ### Background Processing
 - Use `JobProcessor<T>` for fire-and-forget operations
+- Always call `Init()` with a handler before enqueueing jobs
 - Keep job handlers lightweight and fast
 - Implement proper error handling in job processors
-- Consider job persistence for critical operations
+- Call `StopAsync()` before disposing for graceful shutdown
+- Consider job persistence for critical operations that must not be lost
 
 ### Resource Management
 - Always dispose of `ITaskProvider` and `JobProcessor<T>` instances
@@ -533,7 +776,7 @@ public class UserServiceTests
 
 ## Performance Considerations
 
-- **JobProcessor**: Uses unbounded channels for maximum throughput
+- **JobProcessor**: Uses unbounded channels for maximum throughput; processes jobs sequentially to maintain order
 - **Retry Service**: Implements efficient exponential backoff
 - **Task Provider**: Minimal overhead for lock operations
 - **Time Provider**: Direct system calls with no caching overhead
@@ -544,4 +787,4 @@ All implementations in this package are thread-safe:
 - `TimeProvider`: Stateless operations
 - `RetryService`: No shared state between calls
 - `TaskProvider`: Uses thread-safe synchronization primitives
-- `JobProcessor<T>`: Built on thread-safe channels
+- `JobProcessor<T>`: Built on thread-safe channels; safe for concurrent enqueueing
