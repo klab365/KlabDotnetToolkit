@@ -4,6 +4,7 @@ using System.Linq;
 using FluentAssertions;
 
 namespace Klab.Toolkit.DI.DependencyFactory.Tests;
+
 [TestClass()]
 public class DependencyFactoryTests
 {

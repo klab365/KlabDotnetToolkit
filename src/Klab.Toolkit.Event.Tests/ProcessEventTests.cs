@@ -38,7 +38,21 @@ public sealed class ProcessEventTests
         await _eventBus.PublishAsync(new TestEvent1(), CancellationToken.None);
         await Task.Delay(5000);
 
-        _counter.Should().Be("2a2a1");
+        _counter.Should().Be("a2a21");
+    }
+
+    [Fact]
+    public async Task PublishAsync_ShouldBeReturnResultSuccess_WhenCanceled()
+    {
+        // arrange
+        using CancellationTokenSource cts = new();
+        await cts.CancelAsync();
+
+        // act
+        Result result = await _eventBus.PublishAsync(new TestEvent1(), cts.Token);
+
+        // assert
+        result.IsSuccess.Should().BeTrue();
     }
 
     private Task<Result> TestEvent2aHandler(TestEvent2 @event, CancellationToken token)
