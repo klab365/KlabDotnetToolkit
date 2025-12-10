@@ -10,6 +10,12 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## 2.13.2
+
+### Fixed
+
+* **EventBus**: Fix removal of local event handlers to correctly update the ConcurrentDictionary (Threadsafe)
+
 ## 2.13.1
 
 ### Fixed

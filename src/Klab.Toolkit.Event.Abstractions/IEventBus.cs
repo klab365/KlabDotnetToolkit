@@ -20,7 +20,7 @@ public interface IEventBus
     /// <summary>
     /// Getter property for the local event handlers
     /// </summary>
-    ConcurrentDictionary<Type, List<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> GetLocalEventHandlers();
+    ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> GetLocalEventHandlers();
 
     /// <summary>
     /// Publishes an event and not wait until event is processed.
