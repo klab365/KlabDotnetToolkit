@@ -5,10 +5,11 @@ using System.Linq;
 namespace Klab.Toolkit.Results;
 
 /// <summary>
-/// Represents an error that occurred during an operation, containing detailed information
-/// about the error including code, message, and optional exception details.
+/// Represents a generic error implementation that occurred during an operation,
+/// containing detailed information about the error including code, message, and optional exception details.
+/// This is a default implementation of <see cref="IError"/> suitable for most scenarios.
 /// </summary>
-public record Error
+public record Error : IError
 {
     /// <summary>
     /// Gets the unique error code that identifies the type of error.
@@ -33,7 +34,7 @@ public record Error
     /// <summary>
     /// Gets a collection of nested errors, if any.
     /// </summary>
-    public IReadOnlyList<Error> NestedErrors { get; }
+    public IReadOnlyList<IError> NestedErrors { get; }
 
     /// <summary>
     /// Gets a static instance representing no error (success state).
@@ -46,10 +47,10 @@ public record Error
     /// <param name="code">The unique error code.</param>
     /// <param name="message">The error message.</param>
     /// <param name="advice">Optional advice on how to resolve the error.</param>
-    /// <returns>A new Error instance.</returns>
+    /// <returns>A new ErrorGeneric instance.</returns>
     /// <example>
     /// <code>
-    /// var error = Error.Create("VAL001", "Invalid input", "Please provide a valid email address");
+    /// var error = ErrorGeneric.Create("VAL001", "Invalid input", "Please provide a valid email address");
     /// </code>
     /// </example>
     public static Error Create(string code, string message, string advice = "")
@@ -63,13 +64,13 @@ public record Error
     /// <param name="exception">The exception to create an error from.</param>
     /// <param name="code">Optional error code. If not provided, uses the exception type name.</param>
     /// <param name="advice">Optional advice on how to resolve the error.</param>
-    /// <returns>A new Error instance based on the exception.</returns>
+    /// <returns>A new ErrorGeneric instance based on the exception.</returns>
     /// <example>
     /// <code>
     /// try { /* some operation */ }
     /// catch (ArgumentException ex)
     /// {
-    ///     var error = Error.FromException(ex, "ARG001", "Check your input parameters");
+    ///     var error = ErrorGeneric.FromException(ex, "ARG001", "Check your input parameters");
     /// }
     /// </code>
     /// </example>
@@ -114,25 +115,25 @@ public record Error
     /// <param name="message">A summary message describing the overall failure.</param>
     /// <param name="errors">Collection of individual errors.</param>
     /// <param name="advice">Optional advice on how to resolve the errors.</param>
-    /// <returns>A new Error instance containing all the nested errors.</returns>
+    /// <returns>A new ErrorGeneric instance containing all the nested errors.</returns>
     /// <example>
     /// <code>
-    /// var validationErrors = new List&lt;Error&gt;
+    /// var validationErrors = new List&lt;IError&gt;
     /// {
-    ///     Error.Warning("VAL001", "Name is required"),
-    ///     Error.Warning("VAL002", "Email format is invalid")
+    ///     ErrorGeneric.Create("VAL001", "Name is required"),
+    ///     ErrorGeneric.Create("VAL002", "Email format is invalid")
     /// };
-    /// var compositeError = Error.Composite("VALIDATION_FAILED", "Multiple validation errors occurred", validationErrors);
+    /// var compositeError = ErrorGeneric.Composite("VALIDATION_FAILED", "Multiple validation errors occurred", validationErrors);
     /// </code>
     /// </example>
-    public static Error Composite(string code, string message, IEnumerable<Error> errors, string advice = "")
+    public static Error Composite(string code, string message, IEnumerable<IError> errors, string advice = "")
     {
         if (errors == null)
         {
             throw new ArgumentNullException(nameof(errors));
         }
 
-        List<Error> errorList = errors.ToList();
+        List<IError> errorList = errors.ToList();
         if (errorList.Count == 0)
         {
             throw new ArgumentException("At least one error must be provided", nameof(errors));
@@ -146,23 +147,23 @@ public record Error
     /// </summary>
     /// <param name="errors">Collection of individual errors.</param>
     /// <param name="code">Optional error code - defaults to "MULTIPLE_ERRORS".</param>
-    /// <returns>A new Error instance containing all the nested errors.</returns>
-    public static Error Multiple(IEnumerable<Error> errors, string code = "MULTIPLE_ERRORS")
+    /// <returns>A new ErrorGeneric instance containing all the nested errors.</returns>
+    public static Error Multiple(IEnumerable<IError> errors, string code = "MULTIPLE_ERRORS")
     {
         if (errors == null)
         {
             throw new ArgumentNullException(nameof(errors));
         }
 
-        List<Error> errorList = errors.ToList();
+        List<IError> errorList = errors.ToList();
         if (errorList.Count == 0)
         {
             throw new ArgumentException("At least one error must be provided", nameof(errors));
         }
 
-        if (errorList.Count == 1)
+        if (errorList.Count == 1 && errorList[0] is Error genericError)
         {
-            return errorList[0]; // Return single error directly
+            return genericError; // Return single error directly if it's an ErrorGeneric
         }
 
         string message = $"Multiple errors occurred ({errorList.Count} errors)";
@@ -183,12 +184,12 @@ public record Error
     /// <summary>
     /// Gets all errors flattened into a single enumerable (including this error and all nested errors recursively).
     /// </summary>
-    public IEnumerable<Error> GetAllErrors()
+    public IEnumerable<IError> GetAllErrors()
     {
         yield return this;
-        foreach (Error nestedError in NestedErrors)
+        foreach (IError nestedError in NestedErrors)
         {
-            foreach (Error flattenedError in nestedError.GetAllErrors())
+            foreach (IError flattenedError in nestedError.GetAllErrors())
             {
                 yield return flattenedError;
             }
@@ -204,12 +205,12 @@ public record Error
     /// <param name="exception">The underlying exception, if any.</param>
     /// <param name="nestedErrors">Collection of nested errors, if any.</param>
     /// <exception cref="ArgumentNullException">Thrown when code or message is null.</exception>
-    protected Error(string code, string message, string advice, Exception? exception, IReadOnlyList<Error>? nestedErrors = null)
+    protected Error(string code, string message, string advice, Exception? exception, IReadOnlyList<IError>? nestedErrors = null)
     {
         Code = code ?? throw new ArgumentNullException(nameof(code));
         Message = message ?? throw new ArgumentNullException(nameof(message));
         Advice = advice ?? string.Empty;
         Exception = exception;
-        NestedErrors = nestedErrors ?? Array.Empty<Error>();
+        NestedErrors = nestedErrors ?? Array.Empty<IError>();
     }
 }

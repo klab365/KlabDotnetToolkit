@@ -4,9 +4,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="$(MicrosoftPackageVersion)" />
-        <PackageReference Include="System.Threading.Channels" Version="$(MicrosoftPackageVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftPackageVersion)" />
+        <PackageReference Include="System.Text.Json" />
+        <PackageReference Include="System.Threading.Channels" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>
 
     <ItemGroup>

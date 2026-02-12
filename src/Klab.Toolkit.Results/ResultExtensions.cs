@@ -224,7 +224,7 @@ public static class ResultExtensions
     /// </summary>
     public static Result<T> OnFailure<T>(
         this Result<T> result,
-        Action<Error> failureAction) where T : notnull
+        Action<IError> failureAction) where T : notnull
     {
         if (!result.IsSuccess)
         {
@@ -238,7 +238,7 @@ public static class ResultExtensions
     /// </summary>
     public static async Task<Result<T>> OnFailureAsync<T>(
         this Task<Result<T>> resultTask,
-        Func<Error, Task> failureAction) where T : notnull
+        Func<IError, Task> failureAction) where T : notnull
     {
         Result<T> result = await resultTask.ConfigureAwait(false);
         if (!result.IsSuccess)
@@ -254,7 +254,7 @@ public static class ResultExtensions
     /// </summary>
     public static Result OnFailure(
         this Result result,
-        Action<Error> failureAction)
+        Action<IError> failureAction)
     {
         if (!result.IsSuccess)
         {
@@ -268,7 +268,7 @@ public static class ResultExtensions
     /// </summary>
     public static async Task<Result> OnFailureAsync(
         this Task<Result> resultTask,
-        Func<Error, Task> failureAction)
+        Func<IError, Task> failureAction)
     {
         Result result = await resultTask.ConfigureAwait(false);
         if (!result.IsSuccess)
@@ -365,7 +365,7 @@ public static class ResultExtensions
     public static TResult Match<T, TResult>(
         this Result<T> result,
         Func<T, TResult> onSuccess,
-        Func<Error, TResult> onFailure) where T : notnull
+        Func<IError, TResult> onFailure) where T : notnull
     {
         return result.IsSuccess
             ? onSuccess(result.Value)
@@ -378,7 +378,7 @@ public static class ResultExtensions
     public static void Match<T>(
         this Result<T> result,
         Action<T> onSuccess,
-        Action<Error> onFailure) where T : notnull
+        Action<IError> onFailure) where T : notnull
     {
         if (result.IsSuccess)
         {
@@ -440,7 +440,7 @@ public static class ResultExtensions
         return result;
     }
 
-    private static string CreateUnwrapFailureMessage(Error error)
+    private static string CreateUnwrapFailureMessage(IError error)
     {
         return $"Cannot unwrap a failure result. Error Code: {error.Code}, Message: {error.Message}";
     }

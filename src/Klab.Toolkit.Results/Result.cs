@@ -9,13 +9,14 @@ namespace Klab.Toolkit.Results;
 /// </summary>
 public record Result
 {
+    private readonly IError? _error;
     /// <summary>
     /// Initializes a new instance of the <see cref="Result{T}"/> class.
     /// </summary>
-    protected Result(bool isSucceeded, Error error)
+    protected Result(bool isSucceeded, IError? error)
     {
         IsSuccess = isSucceeded;
-        Error = error;
+        _error = error;
     }
 
     /// <summary>
@@ -31,14 +32,14 @@ public record Result
     /// <summary>
     /// Gets contains Errors.
     /// </summary>
-    public Error Error { get; }
+    public IError Error => IsFailure ? _error! : throw new InvalidOperationException("Cannot access error: operation succeeded");
 
     /// <summary>
     /// Generate a success.
     /// </summary>
     public static Result Success()
     {
-        return new Result(true, Error.None);
+        return new Result(true, null);
     }
 
     /// <summary>
@@ -49,13 +50,13 @@ public record Result
     /// <returns></returns>
     public static Result<T> Success<T>(T value) where T : notnull
     {
-        return new Result<T>(value, true, Error.None);
+        return new Result<T>(value, true, null);
     }
 
     /// <summary>
     /// Generate a failure.
     /// </summary>
-    public static Result Failure(Error error)
+    public static Result Failure(IError error)
     {
         return new Result(false, error);
     }
@@ -66,7 +67,7 @@ public record Result
     /// <typeparam name="T"></typeparam>
     /// <param name="error"></param>
     /// <returns></returns>
-    public static Result<T> Failure<T>(Error error) where T : notnull
+    public static Result<T> Failure<T>(IError error) where T : notnull
     {
         return new Result<T>(default!, false, error);
     }
@@ -103,7 +104,7 @@ public record Result<T> : Result where T : notnull
     /// <summary>
     /// Protected constructor
     /// </summary>
-    internal Result(T value, bool isSuccess, Error error) : base(isSuccess, error)
+    internal Result(T value, bool isSuccess, IError? error) : base(isSuccess, error)
     {
         _value = value;
     }

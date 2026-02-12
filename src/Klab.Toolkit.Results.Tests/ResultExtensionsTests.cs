@@ -368,7 +368,7 @@ public class ResultExtensionsTests
     {
         // Arrange
         bool actionExecuted = false;
-        Error error = Error.Create("ErrorCode", "Error message");
+        Error error = Error.Create("ErrorCode", "ErrorGeneric message");
         Result result = Result.Failure(error);
 
         // Act
@@ -403,7 +403,7 @@ public class ResultExtensionsTests
     {
         // Arrange
         bool actionExecuted = false;
-        Error error = Error.Create("ErrorCode", "Error message");
+        Error error = Error.Create("ErrorCode", "ErrorGeneric message");
         Result<string> result = Result.Failure<string>(error);
 
         // Act
@@ -476,7 +476,7 @@ public class ResultExtensionsTests
     {
         // Arrange
         bool actionExecuted = false;
-        Error error = Error.Create("ErrorCode", "Error message");
+        Error error = Error.Create("ErrorCode", "ErrorGeneric message");
         Task<Result> resultTask = Task.FromResult(Result.Failure(error));
 
         // Act
@@ -517,7 +517,7 @@ public class ResultExtensionsTests
     {
         // Arrange
         bool actionExecuted = false;
-        Error error = Error.Create("ErrorCode", "Error message");
+        Error error = Error.Create("ErrorCode", "ErrorGeneric message");
         Task<Result<string>> resultTask = Task.FromResult(Result.Failure<string>(error));
 
         // Act

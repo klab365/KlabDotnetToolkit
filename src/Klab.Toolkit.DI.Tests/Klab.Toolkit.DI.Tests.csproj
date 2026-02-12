@@ -2,6 +2,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Klab.Toolkit.DI\Klab.Toolkit.DI.csproj" />
 
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 </Project>
