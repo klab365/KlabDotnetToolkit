@@ -90,7 +90,7 @@ public class ErrorTests
     public void Multiple_Should_Create_Composite_Error_From_Multiple_Errors()
     {
         // Arrange
-        List<Error> errors =
+        List<IError> errors =
         [
             Error.Create("VAL001", "Name is required"),
             Error.Create("VAL002", "Email is invalid"),
@@ -114,7 +114,7 @@ public class ErrorTests
     {
         // Arrange
         Error singleError = Error.Create("SINGLE", "Single error");
-        List<Error> errors = [singleError];
+        List<IError> errors = [singleError];
 
         // Act
         Error result = Error.Multiple(errors);
@@ -128,10 +128,10 @@ public class ErrorTests
     public void Multiple_Should_Use_Custom_Code()
     {
         // Arrange
-        List<Error> errors =
+        List<IError> errors =
         [
-            Error.Create("VAL001", "Error 1"),
-            Error.Create("VAL002", "Error 2")
+            Error.Create("VAL001", "ErrorGeneric 1"),
+            Error.Create("VAL002", "ErrorGeneric 2")
         ];
 
         // Act
@@ -145,10 +145,10 @@ public class ErrorTests
     public void Composite_Should_Create_Custom_Composite_Error()
     {
         // Arrange
-        List<Error> errors = new List<Error>
+        List<IError> errors = new List<IError>
         {
-            Error.Create("VAL001", "Validation error 1"),
-            Error.Create("VAL002", "Validation error 2")
+            Error.Create("VAL001", "Validation ErrorGeneric 1"),
+            Error.Create("VAL002", "Validation ErrorGeneric 2")
         };
 
         // Act
@@ -169,17 +169,17 @@ public class ErrorTests
     public void GetAllErrors_Should_Return_All_Errors_Flattened()
     {
         // Arrange
-        List<Error> leafErrors =
+        List<IError> leafErrors =
         [
-            Error.Create("LEAF1", "Leaf error 1"),
-            Error.Create("LEAF2", "Leaf error 2")
+            Error.Create("LEAF1", "Leaf ErrorGeneric 1"),
+            Error.Create("LEAF2", "Leaf ErrorGeneric 2")
         ];
 
         Error nestedError = Error.Multiple(leafErrors, "NESTED");
         Error rootError = Error.Composite("ROOT", "Root error", new[] { nestedError });
 
         // Act
-        List<Error> allErrors = rootError.GetAllErrors().ToList();
+        List<IError> allErrors = rootError.GetAllErrors().ToList();
 
         // Assert
         allErrors.Should().HaveCount(4); // root + nested + 2 leaf errors
@@ -193,10 +193,10 @@ public class ErrorTests
     public void TotalErrorCount_Should_Count_All_Nested_Errors_Recursively()
     {
         // Arrange
-        List<Error> deepestErrors =
+        List<IError> deepestErrors =
         [
-            Error.Create("DEEP1", "Deep error 1"),
-            Error.Create("DEEP2", "Deep error 2")
+            Error.Create("DEEP1", "Deep ErrorGeneric 1"),
+            Error.Create("DEEP2", "Deep ErrorGeneric 2")
         ];
 
         Error middleError = Error.Multiple(deepestErrors, "MIDDLE");
@@ -223,7 +223,7 @@ public class ErrorTests
     public void ToString_Should_Include_Nested_Error_Count()
     {
         // Arrange
-        List<Error> nestedErrors =
+        List<IError> nestedErrors =
         [
             Error.Create("NESTED1", "Nested 1"),
             Error.Create("NESTED2", "Nested 2")

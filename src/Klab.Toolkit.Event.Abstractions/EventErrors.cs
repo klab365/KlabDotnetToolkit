@@ -29,7 +29,7 @@ public static class EventErrors
     /// </summary>
     /// <param name="eventType"></param>
     /// <returns></returns>
-    public static Error EventHandlerNotFound(Type eventType) => Error.Create(
+    public static IError EventHandlerNotFound(Type eventType) => Error.Create(
         Keys.EventHandlerNotFoundKey,
         message: $"No event handler found for event type {eventType}",
         advice: "Make sure you registered the event handler in the DI container. If not desired, then ignore this message.");
