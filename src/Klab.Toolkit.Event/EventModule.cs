@@ -23,6 +23,14 @@ public static class EventModule
         RegisterEventQueue(services, configuration);
         services.AddSingleton<EventHandlerMediator>();
         services.AddSingleton<IEventBus, EventBus>();
+
+        // Register CQRs event logger if enabled
+        if (configuration.ShouldLogEvents)
+        {
+            services.AddSingleton<ICqrsEventLogger>(sp =>
+                new JsonCqrsEventLogger(configuration.EventLogFilePath));
+        }
+
         services.AddHostedService<EventProcesserJob>();
         services.AddTransient<IEventHandlerProcessingStrategy, TaskWhenAllPublisher>();
         return services;
