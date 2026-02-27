@@ -1,27 +1,42 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Event;
 
-/// <summary>
-/// Basic implementation of <see cref="IEventBus"/>
-/// </summary>
 internal sealed class EventBus : IEventBus
 {
     private readonly EventHandlerMediator _eventHandlerMediator;
+    private readonly EventModuleConfiguration _configuration;
     private readonly ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> _localEventHandlers = new();
+    private readonly List<object> _eventLogs = new();
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public IEventQueue MessageQueue { get; }
 
-    public EventBus(IEventQueue messageQueue, EventHandlerMediator eventHandlerMediator)
+    public EventBus(
+        IEventQueue messageQueue,
+        EventHandlerMediator eventHandlerMediator,
+        EventModuleConfiguration configuration)
     {
         MessageQueue = messageQueue;
         _eventHandlerMediator = eventHandlerMediator;
+        _configuration = configuration;
+        _jsonSerializerOptions = new()
+        {
+            WriteIndented = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() },
+            PropertyNameCaseInsensitive = true,
+        };
+        _jsonSerializerOptions.Converters.Add(new EventInterfaceJsonConverter());
     }
 
     public ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> GetLocalEventHandlers()
@@ -33,17 +48,30 @@ internal sealed class EventBus : IEventBus
     {
         try
         {
+            if (_configuration.ShouldLogEvents)
+            {
+                LogPublishedEvent(@event);
+            }
+
             await MessageQueue.EnqueueAsync(@event, cancellationToken);
             return Result.Success();
         }
         catch (OperationCanceledException)
         {
-            return Result.Success(); // If the operation was canceled, we consider it a success in this context
+            return Result.Success();
         }
         catch (Exception ex)
         {
             return Result.Failure(Error.Create("EventBus.PublishAsync", ex.Message));
         }
+    }
+
+    private void LogPublishedEvent(EventBase @event)
+    {
+        object eventLog = new { Event = @event, Stage = "Published" };
+        _eventLogs.Add(eventLog);
+        string jsonLog = JsonSerializer.Serialize(_eventLogs, _jsonSerializerOptions);
+        File.WriteAllText(_configuration.EventLogFilePath, jsonLog);
     }
 
     public Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
@@ -69,13 +97,11 @@ internal sealed class EventBus : IEventBus
 
         int handlerHash = CalculateHashOfHandler(handler);
 
-        // Spin-wait retry loop to handle TryUpdate race conditions
         SpinWait spinWait = new();
         while (true)
         {
             if (!_localEventHandlers.TryGetValue(typeof(TEvent), out handlers))
             {
-                // Handler list was removed, consider it success
                 return Result.Success();
             }
 
@@ -86,15 +112,27 @@ internal sealed class EventBus : IEventBus
                 return Result.Success();
             }
 
-            // Spin-wait before retrying to reduce contention
             spinWait.SpinOnce();
         }
     }
 
-    public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         where TResponse : notnull
     {
-        return _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
+        if (_configuration.ShouldLogEvents)
+        {
+            LogSentRequest(request);
+        }
+
+        return await _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
+    }
+
+    private void LogSentRequest(IRequest request)
+    {
+        object requestLog = new { Request = request, Stage = "Sent" };
+        _eventLogs.Add(requestLog);
+        string jsonLog = JsonSerializer.Serialize(_eventLogs, _jsonSerializerOptions);
+        File.WriteAllText(_configuration.EventLogFilePath, jsonLog);
     }
 
     public IAsyncEnumerable<TResponse> Stream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default) where TResponse : notnull
