@@ -32,4 +32,4 @@ jobs:
       - name: Publish
         env:
           SECRETS_NUGETORG_API: ${{ secrets.NUGETORG_API }}
-        run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key "$SECRETS_NUGETORG_API" --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./**/*.nupkg --skip-duplicate --api-key "$SECRETS_NUGETORG_API" --source https://api.nuget.org/v3/index.json
