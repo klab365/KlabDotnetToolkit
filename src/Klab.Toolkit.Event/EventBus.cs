@@ -127,7 +127,7 @@ internal sealed class EventBus : IEventBus
         return await _eventHandlerMediator.SendToHanderAsync(request, cancellationToken);
     }
 
-    private void LogSentRequest(IRequest request)
+    private void LogSentRequest<T>(IRequest<T> request)
     {
         object requestLog = new { Request = request, Stage = "Sent" };
         _eventLogs.Add(requestLog);
