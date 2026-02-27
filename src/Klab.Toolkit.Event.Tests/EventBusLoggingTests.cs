@@ -33,19 +33,52 @@ public class EventBusLoggingTests
     [Fact]
     public async Task PublishAsync_WithLoggingEnabled_ShouldLogEvent()
     {
-        // arrange
         if (File.Exists(_logPath))
         {
             File.Delete(_logPath);
         }
 
-        // act
         await _eventBus.PublishAsync(new TestEvent1());
         await Task.Delay(100);
 
-        // assert - file should exist and contain logged event
         File.Exists(_logPath).Should().BeTrue();
         string content = File.ReadAllText(_logPath);
         content.Should().Contain("TestEvent1");
+    }
+
+    [Fact]
+    public async Task PublishAsync_MultipleEvents_ShouldAccumulateLogs()
+    {
+        if (File.Exists(_logPath))
+        {
+            File.Delete(_logPath);
+        }
+
+        await _eventBus.PublishAsync(new TestEvent1());
+        await Task.Delay(50);
+        await _eventBus.PublishAsync(new TestEvent2("test"));
+        await Task.Delay(50);
+
+        string content = File.ReadAllText(_logPath);
+        content.Should().Contain("TestEvent1");
+        content.Should().Contain("TestEvent2");
+    }
+
+    [Fact]
+    public async Task PublishAsync_DifferentEventTypes_ShouldLogAll()
+    {
+        if (File.Exists(_logPath))
+        {
+            File.Delete(_logPath);
+        }
+
+        await _eventBus.PublishAsync(new TestEvent1());
+        await _eventBus.PublishAsync(new TestEvent2("hello"));
+        await _eventBus.PublishAsync(new TestEvent1());
+        await Task.Delay(100);
+
+        string content = File.ReadAllText(_logPath);
+        content.Should().Contain("TestEvent1");
+        content.Should().Contain("TestEvent2");
     }
 }
