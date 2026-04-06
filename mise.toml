@@ -1,0 +1,33 @@
+[tools]
+dotnet = "10.0"
+"dotnet:dotnet-coverage" = "18.5.2"
+"dotnet:dotnet-format" = "5.1.250801"
+
+[tasks]
+format = "dotnet format --verbosity diagnostic"
+check-format = "dotnet format --verify-no-changes"
+restore = "dotnet restore"
+clean = "dotnet clean"
+check = ["check-format", "test"]
+install = "dotnet restore"
+
+[tasks.tests]
+description = "Runs tests and collects code coverage."
+usage = '''
+flag "--output <output>" help="Output directory for test results and coverage reports. Defaults to ./tmp." default="./tmp"
+arg "args" help="Additional arguments to pass to dotnet test." default=""
+'''
+run = '''
+#!/usr/bin/env bash
+dotnet coverage collect -f xml \
+    -o ${usage_output?}/coverage.xml \
+    "dotnet test --logger:junit;MethodFormat=Class;LogFilePath=${usage_output?}/{assembly}.results.xml ${usage_args?}"
+'''
+
+[tasks.build]
+description = "Builds the project using the specified configuration."
+usage = '''
+flag "--config <config>" help="Build configuration (e.g., Debug, Release). Defaults to Release." default="Debug"
+'''
+run = "dotnet build --configuration ${usage_config?} --no-restore"
+

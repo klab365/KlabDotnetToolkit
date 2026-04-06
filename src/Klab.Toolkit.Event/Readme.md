@@ -58,21 +58,6 @@ var host = builder.Build();
 await host.StartAsync();
 ```
 
-### Advanced Configuration
-
-```csharp
-services.UseEventModule(config =>
-{
-    // Use custom event queue implementation
-    config.EventQueueType = typeof(MyCustomEventQueue);
-    config.EventQueueLifetime = ServiceLifetime.Scoped;
-
-    // Configure event logging
-    config.ShouldLogEvents = true;
-    config.EventLogFilePath = "logs/events.json";
-});
-```
-
 ## Event Publishing and Subscribing
 
 ### Creating Events
@@ -583,6 +568,87 @@ Key differences:
 - Return types should be wrapped in `Result<T>` for better error handling
 - Use `SendAsync` instead of `Send`
 - Registration uses `AddRequestResponseHandler` instead of `AddMediatR`
+
+## Event Bus Logging
+
+The event bus supports configurable logging of events and commands via the `IEventBusLogger` interface.
+
+### Configuration
+
+To choose a logger implementation, set the `EventBusLoggerType` in the event module configuration:
+
+```csharp
+services.UseEventModule(config =>
+{
+    // Use FileEventBusLogger (default) - reads config from IConfiguration
+    config.EventBusLoggerType = typeof(FileEventBusLogger);
+
+    // Or use NullEventBusLogger to disable logging
+    config.EventBusLoggerType = typeof(NullEventBusLogger);
+
+    // Or use your custom logger
+    config.EventBusLoggerType = typeof(MyCustomLogger);
+});
+```
+
+To set the path for the `FileEventBusLogger`, use the `EventBusLoggerPath` configuration key:
+
+```csharp
+services.UseEventModule(config =>
+{
+    config.EventBusLoggerType = typeof(FileEventBusLogger);
+    config.EventBusLoggerPath = "C:\\Logs\\eventbus.log"; // Can also use environment variables
+});
+```
+
+### Log Output Format
+
+Events are logged as JSON with the following structure:
+
+```json
+[
+  {
+    "Timestamp": "2026-03-17T10:30:00Z",
+    "Type": "Event",
+    "Event": { "Id": "...", "CreatedAt": "...", ... },
+    "Results": []
+  },
+  {
+    "Timestamp": "2026-03-17T10:30:01Z",
+    "Type": "Command",
+    "RequestType": "GetUserQuery",
+    "Request": { "UserId": "..." },
+    "Response": { ... }
+  }
+]
+```
+
+### Custom Logger
+
+Implement `IEventBusLogger` for custom logging:
+
+```csharp
+public class MyCustomLogger : IEventBusLogger
+{
+    private readonly ILogger<MyCustomLogger> _logger;
+
+    public MyCustomLogger(ILogger<MyCustomLogger> logger)
+    {
+        _logger = logger;
+    }
+
+    public void LogEvent(EventBase @event, Result[] handlerResults)
+    {
+        _logger.LogInformation("Event {EventType} processed with {HandlerCount} handlers",
+            @event.GetType().Name, handlerResults.Length);
+    }
+
+    public void LogCommand(Type requestType, object requestData, object? response)
+    {
+        _logger.LogInformation("Command {RequestType} executed", requestType.Name);
+    }
+}
+```
 
 ## Troubleshooting
 

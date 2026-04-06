@@ -7,6 +7,9 @@
         <PackageReference Include="System.Text.Json" />
         <PackageReference Include="System.Threading.Channels" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Options" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     </ItemGroup>
 
     <ItemGroup>

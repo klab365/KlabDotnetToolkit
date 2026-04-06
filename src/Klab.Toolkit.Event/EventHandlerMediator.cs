@@ -18,15 +18,17 @@ internal class EventHandlerMediator
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<EventHandlerMediator> _logger;
+    private readonly IEventBusLogger _eventBusLogger;
     private readonly ConcurrentDictionary<Type, EventHandlerWrapper> _eventHandlers = new();
     private readonly ConcurrentDictionary<Type, RequestResponseHandlerWrapper> _requestHandlers = new();
     private readonly ConcurrentDictionary<Type, StreamRequestResponseHandlerWrapper> _streamRequestHandlers = new();
     private readonly IEventHandlerProcessingStrategy _eventProcessingStrategy;
 
-    public EventHandlerMediator(IServiceProvider serviceProvider, ILogger<EventHandlerMediator> logger)
+    public EventHandlerMediator(IServiceProvider serviceProvider, ILogger<EventHandlerMediator> logger, IEventBusLogger eventBusLogger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _eventBusLogger = eventBusLogger;
         _eventProcessingStrategy = serviceProvider.GetRequiredService<IEventHandlerProcessingStrategy>();
     }
 
@@ -37,7 +39,9 @@ internal class EventHandlerMediator
             EventHandlerWrapper? eventHandler = GetEventHandler(@event);
             if (eventHandler is null)
             {
+#pragma warning disable CA1873 // Avoid potentially expensive logging
                 _logger.LogDebug("No event handler found for event type {EventType}", @event.GetType());
+#pragma warning restore CA1873 // Avoid potentially expensive logging
                 return [];
             }
 
@@ -55,15 +59,19 @@ internal class EventHandlerMediator
         where TResponse : notnull
     {
         RequestResponseHandlerWrapper requestHandler = GetRequestHandlerWrapper(request);
-        return (TResponse)await requestHandler.HandleAsync(request, _serviceProvider, cancellationToken);
+        TResponse response = (TResponse)await requestHandler.HandleAsync(request, _serviceProvider, cancellationToken);
+        await _eventBusLogger.LogCommandAsync(request.GetType(), request, response);
+        return response;
     }
 
     public async IAsyncEnumerable<TResponse> SendToStreamHandlerAsync<TResponse>(IStreamRequest<TResponse> request, [EnumeratorCancellation] CancellationToken cancellationToken)
+        where TResponse : notnull
     {
         StreamRequestResponseHandlerWrapper requestHandler = GetStreamRequestHandlerWrapper(request);
 
         await foreach (TResponse item in requestHandler.HandleAsync(request, _serviceProvider, cancellationToken))
         {
+            await _eventBusLogger.LogStreamRequestAsync(request.GetType(), request, item);
             yield return item;
         }
     }

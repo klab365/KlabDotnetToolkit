@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Klab.Toolkit.Event;
 
@@ -21,6 +22,7 @@ public static class EventModule
         services.AddSingleton(configuration);
 
         RegisterEventQueue(services, configuration);
+        RegisterEventBusLogger(services, configuration);
         services.AddSingleton<EventHandlerMediator>();
         services.AddSingleton<IEventBus, EventBus>();
         services.AddHostedService<EventProcesserJob>();
@@ -44,31 +46,28 @@ public static class EventModule
         services.Add(eventQueueDescriptor);
     }
 
+    private static void RegisterEventBusLogger(IServiceCollection services, EventModuleConfiguration configuration)
+    {
+        if (configuration.EventBusLoggerType != null)
+        {
+            if (!typeof(IEventBusLogger).IsAssignableFrom(configuration.EventBusLoggerType))
+            {
+                throw new ArgumentException("Invalid event bus logger type");
+            }
 
-}
+            services.AddSingleton(typeof(IEventBusLogger), configuration.EventBusLoggerType);
 
-/// <summary>
-/// Event Module Configuration
-/// </summary>
-public class EventModuleConfiguration
-{
-    /// <summary>
-    /// Gets or sets the event queue type
-    /// </summary>
-    public Type? EventQueueType { get; set; } = typeof(InMemoryMessageQueue);
-
-    /// <summary>
-    /// Gets or sets the event queue lifetime
-    /// </summary>
-    public ServiceLifetime EventQueueLifetime { get; set; } = ServiceLifetime.Singleton;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to log events
-    /// </summary>
-    public bool ShouldLogEvents { get; set; }
-
-    /// <summary>
-    /// Gets or sets the event log file path
-    /// </summary>
-    public string EventLogFilePath { get; set; } = "event-logs.json";
+            if (typeof(IHostedService).IsAssignableFrom(configuration.EventBusLoggerType))
+            {
+                services.AddSingleton(provider => (IHostedService)provider.GetRequiredService<IEventBusLogger>());
+                services.AddHostedService(provider => (IHostedService)provider.GetRequiredService<IEventBusLogger>());
+            }
+        }
+        else
+        {
+            services.AddSingleton<FileEventBusLogger>();
+            services.AddSingleton<IEventBusLogger>(provider => provider.GetRequiredService<FileEventBusLogger>());
+            services.AddHostedService(provider => provider.GetRequiredService<FileEventBusLogger>());
+        }
+    }
 }
