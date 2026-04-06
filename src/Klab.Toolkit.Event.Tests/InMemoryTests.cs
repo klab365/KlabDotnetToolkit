@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Klab.Toolkit.Results;
@@ -20,10 +21,7 @@ public class InMemoryTests
             {
                 services.AddEventSubsribtion<TestEvent1, TestEventHandler1>(ServiceLifetime.Singleton);
                 services.AddEventSubsribtion<TestEvent1, TestEventHandler2>(ServiceLifetime.Singleton);
-                services.AddEventModule(cfg =>
-                {
-                    cfg.ShouldLogEvents = false;
-                });
+                services.AddEventModule(cfg => cfg.EventBusLoggerType = typeof(NullEventBusLogger));
             })
             .Build();
 
@@ -52,12 +50,14 @@ public class InMemoryTests
         const int count = 100_000;
         for (int i = 0; i < count; i++)
         {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             await _eventBus.PublishAsync(new TestEvent1());
-            // Task.Run(async () => await _eventBus.PublishAsync(new TestEvent1()));
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
-        await Task.Delay(3000); // wait for event to be processed
+
+        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
+        while (_testEventHandler1.Counter < count && !cts.Token.IsCancellationRequested)
+        {
+            await Task.Delay(50);
+        }
 
         // assert
         _testEventHandler1.Counter.Should().Be(count);

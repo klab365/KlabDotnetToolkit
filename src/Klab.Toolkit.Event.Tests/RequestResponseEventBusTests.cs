@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Klab.Toolkit.Results;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -16,6 +18,14 @@ public class RequestResponseEventBusTests
     public RequestResponseEventBusTests()
     {
         IHost host = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["EventBusLogger:LogEvents"] = "false",
+                    ["EventBusLogger:LogCommands"] = "false"
+                });
+            })
             .ConfigureServices(services =>
             {
                 services.AddRequestResponseHandler<PingRequest, Result, PingRequestHandler>(ServiceLifetime.Singleton);

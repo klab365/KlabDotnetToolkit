@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Klab.Toolkit.Results;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -22,12 +23,17 @@ public class EventBusCoverageTests
     public EventBusCoverageTests()
     {
         IHost host = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                config.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["EventBusLogger:LogEvents"] = "false",
+                    ["EventBusLogger:LogCommands"] = "false"
+                });
+            })
             .ConfigureServices(services =>
             {
-                services.AddEventModule(cfg =>
-                {
-                    cfg.ShouldLogEvents = false;
-                });
+                services.AddEventModule();
             })
             .Build();
 

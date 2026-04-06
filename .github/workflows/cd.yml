@@ -11,23 +11,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
         with:
-          dotnet-version: "9.0.x"
+          install: true
+          cache: true
+          experimental: true
 
       - name: Extract version number
         id: extract_version
         run: echo "version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/V\(.*\)/\1/')" >> $GITHUB_ENV
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: mise run restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore -p:Version=${{ env.version }}
+        run: mise run build Release -p:Version=${{ env.version }}
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: mise run test ./tmp
 
       - name: Publish
         env:

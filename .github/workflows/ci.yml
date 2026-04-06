@@ -14,18 +14,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
         with:
-          dotnet-version: "9.0.x"
-
-      - uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
-
-      - name: Install tools
-        run: just setup
+          install: true
+          cache: true
+          experimental: true
 
       - name: Run dotnet format
-        run: just check-format
+        run: mise run check-format
 
   build-and-test:
     runs-on: ubuntu-latest
@@ -33,24 +29,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
         with:
-          dotnet-version: "9.0.x"
-
-      - uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff
-
-      - name: Install tools
-        run: just setup
+          install: true
+          cache: true
+          experimental: true
 
       - name: Restore dependencies
-        run: just restore
+        run: mise run restore
 
       - name: Build
-        run: just build Release
+        run: mise run build --config Release
 
       - name: Test
-        run: just test ./tmp
+        run: mise run tests --output ./tmp
 
       - name: SonarQubeScan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9

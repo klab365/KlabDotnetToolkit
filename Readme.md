@@ -58,6 +58,7 @@ await foreach (var activity in eventBus.Stream(new GetUserActivityStream(userId)
 - Built-in error handling with Result pattern
 - Event logging and sensitive data protection
 - Background processing with hosted services
+- Configurable event bus logging (see package Readme for details)
 
 ---
 
