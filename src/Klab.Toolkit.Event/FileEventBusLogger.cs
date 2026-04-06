@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -16,6 +17,11 @@ namespace Klab.Toolkit.Event;
 /// File-based implementation of IEventBusLogger that uses a channel-backed background worker
 /// so that callers are never blocked by I/O.
 /// </summary>
+/// <remarks>
+/// This class uses reflection-based type inspection for Result extraction.
+/// Marked with [RequiresUnreferencedCode] for AOT compatibility awareness.
+/// </remarks>
+[RequiresUnreferencedCode("Uses reflection for type inspection which is not AOT-safe.")]
 public sealed class FileEventBusLogger : BackgroundService, IEventBusLogger
 {
     private readonly string _logFilePath;

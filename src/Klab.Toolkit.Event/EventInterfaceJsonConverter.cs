@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -7,6 +8,14 @@ namespace Klab.Toolkit.Event;
 /// <summary>
 /// Custom JSON converter for interfaces
 /// </summary>
+/// <remarks>
+/// This converter uses runtime type detection for polymorphic serialization.
+/// Marked with [RequiresUnreferencedCode] because the AOT analyzer cannot
+/// statically determine all derived types that may be serialized. For full
+/// AOT compatibility, consider using [JsonDerivedType] attributes on EventBase
+/// with known subtypes, or a source-generated approach.
+/// </remarks>
+[RequiresUnreferencedCode("Uses runtime type detection for polymorphic serialization.")]
 internal sealed class EventInterfaceJsonConverter : JsonConverter<EventBase>
 {
     /// <inheritdoc/>

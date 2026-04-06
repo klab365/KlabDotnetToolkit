@@ -24,6 +24,7 @@
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnableAotAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</EnableAotAnalyzer>
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,6 +77,16 @@ internal class EventHandlerMediator
         }
     }
 
+    /// <summary>
+    /// Gets the event handler for the specified event type.
+    /// </summary>
+    /// <remarks>
+    /// This method uses reflection to create generic wrapper types at runtime.
+    /// It is marked with [RequiresUnreferencedCode] because MakeGenericType cannot be
+    /// statically analyzed by the AOT compiler. For full AOT compatibility, consider
+    /// using source generators to pre-generate these lookups.
+    /// </remarks>
+    [RequiresUnreferencedCode("Uses MakeGenericType for runtime type creation which is not AOT-safe.")]
     private EventHandlerWrapper? GetEventHandler(EventBase @event)
     {
         EventHandlerWrapper? res = _eventHandlers.GetOrAdd(@event.GetType(), eventType =>
@@ -88,6 +99,16 @@ internal class EventHandlerMediator
         return res;
     }
 
+    /// <summary>
+    /// Gets the request handler wrapper for the specified request type.
+    /// </summary>
+    /// <remarks>
+    /// This method uses reflection to create generic wrapper types at runtime.
+    /// It is marked with [RequiresUnreferencedCode] because MakeGenericType cannot be
+    /// statically analyzed by the AOT compiler. For full AOT compatibility, consider
+    /// using source generators to pre-generate these lookups.
+    /// </remarks>
+    [RequiresUnreferencedCode("Uses MakeGenericType for runtime type creation which is not AOT-safe.")]
     private RequestResponseHandlerWrapper GetRequestHandlerWrapper<TResponse>(IRequest<TResponse> request)
     {
         return _requestHandlers.GetOrAdd(request.GetType(), requestType =>
@@ -103,6 +124,16 @@ internal class EventHandlerMediator
         });
     }
 
+    /// <summary>
+    /// Gets the stream request handler wrapper for the specified request type.
+    /// </summary>
+    /// <remarks>
+    /// This method uses reflection to create generic wrapper types at runtime.
+    /// It is marked with [RequiresUnreferencedCode] because MakeGenericType cannot be
+    /// statically analyzed by the AOT compiler. For full AOT compatibility, consider
+    /// using source generators to pre-generate these lookups.
+    /// </remarks>
+    [RequiresUnreferencedCode("Uses MakeGenericType for runtime type creation which is not AOT-safe.")]
     private StreamRequestResponseHandlerWrapper GetStreamRequestHandlerWrapper<TResponse>(IStreamRequest<TResponse> request)
     {
         return _streamRequestHandlers.GetOrAdd(request.GetType(), requestType =>
