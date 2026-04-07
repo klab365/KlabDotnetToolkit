@@ -5,9 +5,14 @@
     <Company>Klab</Company>
     <PackageTags>toolkit</PackageTags>
     <AnalysisMode>Recommended</AnalysisMode>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net8.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>AnyCpu</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet">
