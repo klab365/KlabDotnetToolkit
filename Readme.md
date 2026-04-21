@@ -10,8 +10,8 @@ A comprehensive collection of .NET libraries designed to accelerate development 
 Install individual packages as needed:
 
 ```bash
-# Event-driven architecture
-dotnet add package Klab.Toolkit.Event
+# Messaging (mediator pattern)
+dotnet add package Klab.Toolkit.Messaging
 
 # Functional error handling
 dotnet add package Klab.Toolkit.Results
@@ -31,8 +31,8 @@ dotnet add package Klab.Toolkit.ValueObjects
 
 ## 📦 Packages
 
-### 🎯 [Klab.Toolkit.Event](src/Klab.Toolkit.Event/)
-**Event-driven architecture made simple**
+### 🎯 [Klab.Toolkit.Messaging](src/Klab.Toolkit.Messaging/)
+**Messaging (mediator pattern) made simple**
 
 A comprehensive event-driven communication system supporting three patterns:
 - **Event Publishing/Subscribing**: Fire-and-forget notifications with multiple handlers
@@ -41,13 +41,13 @@ A comprehensive event-driven communication system supporting three patterns:
 
 ```csharp
 // Event publishing
-await eventBus.PublishAsync(new UserRegisteredEvent(userId, email));
+await mediator.PublishAsync(new UserRegisteredEvent(userId, email));
 
 // Request/response
-var user = await eventBus.SendAsync(new GetUserQuery(userId));
+var user = await mediator.SendAsync(new GetUserQuery(userId));
 
 // Streaming responses
-await foreach (var activity in eventBus.Stream(new GetUserActivityStream(userId)))
+await foreach (var activity in mediator.Stream(new GetUserActivityStream(userId)))
 {
     // Process real-time data
 }

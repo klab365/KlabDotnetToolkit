@@ -1,7 +1,7 @@
 [tools]
-dotnet = "10.0"
-"dotnet:dotnet-coverage" = "18.5.2"
-"dotnet:dotnet-format" = "5.1.250801"
+dotnet = {version = "10.0", os = ["linux"]}
+"dotnet:dotnet-coverage" = {version = "18.5.2", os = ["linux"]}
+"dotnet:dotnet-format" = {version = "5.1.250801", os = ["linux"]}
 
 [tasks]
 format = "dotnet format --verbosity diagnostic"

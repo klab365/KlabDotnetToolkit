@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -13,9 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.DI", "src\Klab
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.DI.Tests", "src\Klab.Toolkit.DI.Tests\Klab.Toolkit.DI.Tests.csproj", "{2BFCB77F-43C8-4B0A-ADAB-019EE06709EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Event", "src\Klab.Toolkit.Event\Klab.Toolkit.Event.csproj", "{6384A4F0-8951-4E6E-BAD3-772A647339B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Messaging", "src\Klab.Toolkit.Messaging\Klab.Toolkit.Messaging.csproj", "{6384A4F0-8951-4E6E-BAD3-772A647339B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Event.Tests", "src\Klab.Toolkit.Event.Tests\Klab.Toolkit.Event.Tests.csproj", "{3B0E2F3E-FDCC-40E5-BAFF-F2B3E6953CCB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Messaging.Tests", "src\Klab.Toolkit.Messaging.Tests\Klab.Toolkit.Messaging.Tests.csproj", "{3B0E2F3E-FDCC-40E5-BAFF-F2B3E6953CCB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.ExtensionMethods", "src\Klab.Toolkit.ExtensionMethods\Klab.Toolkit.ExtensionMethods.csproj", "{EA1E47B1-AF51-415B-A383-7370815A623A}"
 EndProject
@@ -29,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.ValueObjects",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.ValueObjects.Tests", "src\Klab.Toolkit.ValueObjects.Tests\Klab.Toolkit.ValueObjects.Tests.csproj", "{8C7784B7-89BC-4B5C-9BEF-56A1EE1C5825}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Event.Abstractions", "src\Klab.Toolkit.Event.Abstractions\Klab.Toolkit.Event.Abstractions.csproj", "{BE6AEC30-CDAE-4167-848B-B1BA10637D5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Klab.Toolkit.Messaging.Abstractions", "src\Klab.Toolkit.Messaging.Abstractions\Klab.Toolkit.Messaging.Abstractions.csproj", "{BE6AEC30-CDAE-4167-848B-B1BA10637D5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
