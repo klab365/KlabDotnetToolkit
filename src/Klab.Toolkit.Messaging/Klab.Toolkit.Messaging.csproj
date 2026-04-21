@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <InternalsVisibleTo Include="Klab.Toolkit.Messaging.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" />
+        <PackageReference Include="System.Threading.Channels" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Options" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />
+        <ProjectReference Include="..\Klab.Toolkit.Messaging.Abstractions\Klab.Toolkit.Messaging.Abstractions.csproj" />
+    </ItemGroup>
+</Project>

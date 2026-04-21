@@ -1,6 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <ProjectReference Include="..\Klab.Toolkit.Event\Klab.Toolkit.Event.csproj" />
-        <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />
-    </ItemGroup>
-</Project>
