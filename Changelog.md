@@ -15,6 +15,7 @@ This document is valid within the scope of the work for all projects.
 ### Updated
 
 * Update Result pattern to change error to an interface and generate a generic Error class.
+* Rename Event Library to Messaging Library and update namespaces accordingly.
 
 ## 2.13.2
 
