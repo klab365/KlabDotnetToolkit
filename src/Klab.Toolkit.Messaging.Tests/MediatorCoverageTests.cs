@@ -70,7 +70,7 @@ public class EventBusCoverageTests
         await Task.WhenAll(tasks);
 
         // assert - all handlers should be registered
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> localHandlers = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> localHandlers = _eventBus.GetLocalEventHandlers();
         localHandlers.Should().ContainKey(typeof(TestEvent1));
         localHandlers[typeof(TestEvent1)].Count.Should().Be(taskCount);
     }
@@ -95,7 +95,7 @@ public class EventBusCoverageTests
         result2.Error.Message.Should().Be("Handler already exists");
 
         // verify only one handler is registered
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> handlers = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> handlers = _eventBus.GetLocalEventHandlers();
         handlers[typeof(TestEvent1)].Count.Should().Be(1);
 
         // cleanup
@@ -249,7 +249,7 @@ public class EventBusCoverageTests
         counter1.Should().Be(1);
         counter2.Should().Be(1);
 
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> handlers = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> handlers = _eventBus.GetLocalEventHandlers();
         handlers.Should().ContainKey(typeof(TestEvent1));
         handlers.Should().ContainKey(typeof(TestEvent2));
     }
@@ -262,22 +262,22 @@ public class EventBusCoverageTests
         Func<TestEvent1, CancellationToken, Task<Result>> handler2 = (evt, ct) => Task.FromResult(Result.Success());
 
         // act & assert - initially empty or doesn't contain TestEvent1
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> initialHandlers = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> initialHandlers = _eventBus.GetLocalEventHandlers();
         initialHandlers.ContainsKey(typeof(TestEvent1)).Should().BeFalse();
 
         // subscribe first handler
         _eventBus.Subscribe<TestEvent1>(handler1);
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> afterFirst = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> afterFirst = _eventBus.GetLocalEventHandlers();
         afterFirst[typeof(TestEvent1)].Count.Should().Be(1);
 
         // subscribe second handler
         _eventBus.Subscribe<TestEvent1>(handler2);
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> afterSecond = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> afterSecond = _eventBus.GetLocalEventHandlers();
         afterSecond[typeof(TestEvent1)].Count.Should().Be(2);
 
         // unsubscribe first handler
         _eventBus.Unsubscribe<TestEvent1>(handler1);
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> afterUnsubscribe = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> afterUnsubscribe = _eventBus.GetLocalEventHandlers();
         afterUnsubscribe[typeof(TestEvent1)].Count.Should().Be(1);
 
         await Task.CompletedTask;
@@ -382,7 +382,7 @@ public class EventBusCoverageTests
         await Task.WhenAll(tasks);
 
         // assert - no exceptions should be thrown and state should be consistent
-        ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> handlers = _eventBus.GetLocalEventHandlers();
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> handlers = _eventBus.GetLocalEventHandlers();
         if (handlers.ContainsKey(typeof(TestEvent1)))
         {
             // Count should be reasonable (0-2 depending on final state)

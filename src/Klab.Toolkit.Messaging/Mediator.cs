@@ -14,7 +14,7 @@ namespace Klab.Toolkit.Messaging;
 internal sealed class Mediator : IMediator
 {
     private readonly MessagingHandlerMediator _eventHandlerMediator;
-    private readonly ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> _localEventHandlers = new();
+    private readonly ConcurrentDictionary<Type, ConcurrentBag<LocalHandlerEntry>> _localEventHandlers = new();
 
     public IEventQueue MessageQueue { get; }
 
@@ -24,9 +24,27 @@ internal sealed class Mediator : IMediator
         _eventHandlerMediator = eventHandlerMediator;
     }
 
-    public ConcurrentDictionary<Type, ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>> GetLocalEventHandlers()
+    public ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> GetLocalEventHandlers()
     {
-        return _localEventHandlers;
+        ConcurrentDictionary<Type, ConcurrentBag<Func<EventBase, CancellationToken, Task<Result>>>> result = new();
+        foreach (System.Collections.Generic.KeyValuePair<Type, ConcurrentBag<LocalHandlerEntry>> kvp in _localEventHandlers)
+        {
+            result[kvp.Key] = [.. kvp.Value.Select(e => e.Wrapper)];
+        }
+
+        return result;
+    }
+
+    internal bool TryGetWrappers(Type eventType, out IEnumerable<Func<EventBase, CancellationToken, Task<Result>>> wrappers)
+    {
+        if (_localEventHandlers.TryGetValue(eventType, out ConcurrentBag<LocalHandlerEntry>? entries))
+        {
+            wrappers = entries.Select(e => e.Wrapper);
+            return true;
+        }
+
+        wrappers = [];
+        return false;
     }
 
     public async Task<Result> PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : EventBase
@@ -38,7 +56,7 @@ internal sealed class Mediator : IMediator
         }
         catch (OperationCanceledException)
         {
-            return Result.Success(); // If the operation was canceled, we consider it a success in this context
+            return Result.Success();
         }
         catch (Exception ex)
         {
@@ -48,45 +66,39 @@ internal sealed class Mediator : IMediator
 
     public Result Subscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
     {
-        ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>> handlers = _localEventHandlers.GetOrAdd(typeof(TEvent), _ => []);
+        ConcurrentBag<LocalHandlerEntry> entries = _localEventHandlers.GetOrAdd(typeof(TEvent), _ => []);
 
-        int handlerHash = CalculateHashOfHandler(handler);
-        if (handlers.Any(x => x.Key == handlerHash))
+        if (entries.Any(e => e.Original.Equals(handler)))
         {
             return Result.Failure(Error.Create(string.Empty, "Handler already exists"));
         }
 
-        handlers.Add(new(handlerHash, (@event, token) => handler((TEvent)@event, token)));
+        entries.Add(new LocalHandlerEntry(handler, (@event, token) => handler((TEvent)@event, token)));
         return Result.Success();
     }
 
     public Result Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
     {
-        if (!_localEventHandlers.TryGetValue(typeof(TEvent), out ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>>? handlers))
+        if (!_localEventHandlers.TryGetValue(typeof(TEvent), out ConcurrentBag<LocalHandlerEntry>? entries))
         {
             return Result.Failure(Error.Create(string.Empty, "No handler found for the event type"));
         }
 
-        int handlerHash = CalculateHashOfHandler(handler);
-
-        // Spin-wait retry loop to handle TryUpdate race conditions
         SpinWait spinWait = new();
         while (true)
         {
-            if (!_localEventHandlers.TryGetValue(typeof(TEvent), out handlers))
-            {
-                // Handler list was removed, consider it success
-                return Result.Success();
-            }
-
-            ConcurrentBag<KeyValuePair<int, Func<EventBase, CancellationToken, Task<Result>>>> newBag = [.. handlers.Where(x => x.Key != handlerHash)];
-
-            if (_localEventHandlers.TryUpdate(typeof(TEvent), newBag, handlers))
+            if (!_localEventHandlers.TryGetValue(typeof(TEvent), out entries))
             {
                 return Result.Success();
             }
 
-            // Spin-wait before retrying to reduce contention
+            ConcurrentBag<LocalHandlerEntry> newBag = [.. entries.Where(e => !e.Original.Equals(handler))];
+
+            if (_localEventHandlers.TryUpdate(typeof(TEvent), newBag, entries))
+            {
+                return Result.Success();
+            }
+
             spinWait.SpinOnce();
         }
     }
@@ -102,8 +114,15 @@ internal sealed class Mediator : IMediator
         return _eventHandlerMediator.SendToStreamHandlerAsync(request, cancellationToken);
     }
 
-    private static int CalculateHashOfHandler<TEvent>(Func<TEvent, CancellationToken, Task<Result>> handler) where TEvent : EventBase
+    private sealed class LocalHandlerEntry
     {
-        return handler.Method.GetHashCode() ^ handler.Target?.GetHashCode() ?? throw new InvalidOperationException("Handler is not valid");
+        public Delegate Original { get; }
+        public Func<EventBase, CancellationToken, Task<Result>> Wrapper { get; }
+
+        public LocalHandlerEntry(Delegate original, Func<EventBase, CancellationToken, Task<Result>> wrapper)
+        {
+            Original = original;
+            Wrapper = wrapper;
+        }
     }
 }

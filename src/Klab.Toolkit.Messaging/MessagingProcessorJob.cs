@@ -73,16 +73,12 @@ internal sealed class MessagingProcessorJob : BackgroundService
 
     private async Task<Result[]> ProcessLocalFunctionsAsync(EventBase @event, CancellationToken stoppingToken)
     {
-        if (!_mediator.GetLocalEventHandlers().ContainsKey(@event.GetType()))
+        if (_mediator is not Mediator mediator || !mediator.TryGetWrappers(@event.GetType(), out IEnumerable<Func<EventBase, CancellationToken, Task<Result>>> wrappers))
         {
             return [];
         }
 
-        IEnumerable<Task<Result>> tasks = _mediator
-            .GetLocalEventHandlers()[@event.GetType()]
-            .Select(handler => handler.Value(@event, stoppingToken));
-
-        Result[] res = await Task.WhenAll(tasks);
+        Result[] res = await Task.WhenAll(wrappers.Select(w => w(@event, stoppingToken)));
         return res;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,9 +22,20 @@ internal class StreamRequestResponseHandlerWrapper<TRequest, TResponse> : Stream
         {
             throw new InvalidOperationException($"Request type mismatch. Expected {typeof(TRequest).Name} but received {request.GetType().Name}");
         }
-        IStreamRequestHandler<TRequest, TResponse> handler = serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>();
 
-        await foreach (TResponse item in handler.HandleAsync(castedReq, cancellationToken))
+        IStreamRequestHandler<TRequest, TResponse> handler = serviceProvider.GetRequiredService<IStreamRequestHandler<TRequest, TResponse>>();
+        IEnumerable<IStreamRequestMiddleware<TRequest, TResponse>> middlewares = serviceProvider.GetServices<IStreamRequestMiddleware<TRequest, TResponse>>();
+
+        StreamHandlerDelegate<TResponse> pipeline = () => handler.HandleAsync(castedReq, cancellationToken);
+
+        foreach (IStreamRequestMiddleware<TRequest, TResponse> middleware in middlewares.Reverse())
+        {
+            StreamHandlerDelegate<TResponse> next = pipeline;
+            IStreamRequestMiddleware<TRequest, TResponse> current = middleware;
+            pipeline = () => current.HandleAsync(castedReq, next, cancellationToken);
+        }
+
+        await foreach (TResponse item in pipeline())
         {
             yield return item;
         }
