@@ -17,7 +17,7 @@ public static class MessagingModule
     /// <returns></returns>
     public static IServiceCollection AddMessagingModule(this IServiceCollection services, Action<MessagingModuleConfiguration>? configure = default)
     {
-        MessagingModuleConfiguration configuration = new MessagingModuleConfiguration();
+        MessagingModuleConfiguration configuration = new();
         configure?.Invoke(configuration);
         services.AddSingleton(configuration);
 
