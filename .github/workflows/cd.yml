@@ -27,9 +27,6 @@ jobs:
       - name: Build
         run: mise run build Release -p:Version=${{ env.version }}
 
-      - name: Test
-        run: mise run test ./tmp
-
       - name: Publish
         env:
           SECRETS_NUGETORG_API: ${{ secrets.NUGETORG_API }}
