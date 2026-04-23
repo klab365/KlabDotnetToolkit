@@ -27,8 +27,8 @@ public class EventBusCoverageTests
             {
                 config.AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    ["EventBusLogger:LogEvents"] = "false",
-                    ["EventBusLogger:LogCommands"] = "false"
+                    ["MessagingLogger:LogEvents"] = "false",
+                    ["MessagingLogger:LogCommands"] = "false"
                 });
             })
             .ConfigureServices(services =>

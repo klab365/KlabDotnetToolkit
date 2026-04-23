@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Klab.Toolkit.Results;
@@ -8,6 +9,7 @@ namespace Klab.Toolkit.Messaging;
 /// <summary>
 /// No-op implementation of IMessagingLogger.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class NullMessagingLogger : IMessagingLogger
 {
     /// <inheritdoc/>

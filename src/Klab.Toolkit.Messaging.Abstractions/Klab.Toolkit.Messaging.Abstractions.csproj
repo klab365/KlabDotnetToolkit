@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
+    <ItemGroup>
         <InternalsVisibleTo Include="Klab.Toolkit.Messaging" />
+        <InternalsVisibleTo Include="Klab.Toolkit.Messaging.Tests" />
     </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
         <ProjectReference Include="..\Klab.Toolkit.Results\Klab.Toolkit.Results.csproj" />
     </ItemGroup>
 

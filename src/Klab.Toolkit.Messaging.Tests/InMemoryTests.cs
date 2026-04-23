@@ -19,8 +19,8 @@ public class InMemoryTests
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.AddNotificationHandler<TestEvent1, TestEventHandler1>(ServiceLifetime.Singleton);
-                services.AddNotificationHandler<TestEvent1, TestEventHandler2>(ServiceLifetime.Singleton);
+                services.AddEventHandler<TestEvent1, TestEventHandler1>(ServiceLifetime.Singleton);
+                services.AddEventHandler<TestEvent1, TestEventHandler2>(ServiceLifetime.Singleton);
                 services.AddMessagingModule(cfg => cfg.MessagingLoggerType = typeof(NullMessagingLogger));
             })
             .Build();

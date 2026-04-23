@@ -9,13 +9,13 @@ namespace Klab.Toolkit.Messaging;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds a notification handler
+    /// Adds an event handler
     /// </summary>
     /// <typeparam name="TEvent"></typeparam>
     /// <typeparam name="THandler"></typeparam>
     /// <param name="services"></param>
     /// <param name="lifetime"></param>
-    public static void AddNotificationHandler<TEvent, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddEventHandler<TEvent, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TEvent : EventBase
         where THandler : class, IEventHandler<TEvent>
     {
