@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Klab.Toolkit.Results;
 
 namespace Klab.Toolkit.Messaging;
@@ -6,6 +7,7 @@ namespace Klab.Toolkit.Messaging;
 /// <summary>
 /// Messaging Errors
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class MessagingErrors
 {
     /// <summary>
