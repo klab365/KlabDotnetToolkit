@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,21 +16,25 @@ internal class RequestResponseHandlerWrapper<TRequest, TResponse> : RequestRespo
     where TRequest : IRequest<TResponse>
     where TResponse : notnull
 {
-
     public override async Task<object> HandleAsync(object request, IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
         if (request is not TRequest castedReq)
         {
             throw new InvalidOperationException($"Request type mismatch. Expected {typeof(TRequest).Name} but received {request.GetType().Name}");
         }
-        IRequestHandler<TRequest, TResponse> handler = serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
 
-        TResponse res = await handler.HandleAsync(castedReq, cancellationToken);
-        if (res is not TResponse castedResp)
+        IRequestHandler<TRequest, TResponse> handler = serviceProvider.GetRequiredService<IRequestHandler<TRequest, TResponse>>();
+        IEnumerable<IRequestMiddleware<TRequest, TResponse>> middlewares = serviceProvider.GetServices<IRequestMiddleware<TRequest, TResponse>>();
+
+        RequestHandlerDelegate<TResponse> pipeline = () => handler.HandleAsync(castedReq, cancellationToken);
+
+        foreach (IRequestMiddleware<TRequest, TResponse> middleware in middlewares.Reverse())
         {
-            throw new InvalidOperationException($"Response type mismatch. Expected {typeof(TResponse).Name} but received {res.GetType().Name}");
+            RequestHandlerDelegate<TResponse> next = pipeline;
+            IRequestMiddleware<TRequest, TResponse> current = middleware;
+            pipeline = () => current.HandleAsync(castedReq, next, cancellationToken);
         }
 
-        return castedResp;
+        return await pipeline();
     }
 }

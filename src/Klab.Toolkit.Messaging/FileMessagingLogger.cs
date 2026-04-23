@@ -94,29 +94,22 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        List<object> buffer = new List<object>();
-
         await foreach (object entry in _channel.Reader.ReadAllAsync(stoppingToken))
         {
             if (entry is FlushMarker marker)
             {
-                if (buffer.Count > 0)
-                {
-                    await WriteBufferToFileAsync(buffer, stoppingToken);
-                }
                 marker.Completion.TrySetResult(true);
                 continue;
             }
 
-            buffer.Add(entry);
-            await WriteBufferToFileAsync(buffer, stoppingToken);
+            await AppendEntryToFileAsync(entry, stoppingToken);
         }
     }
 
-    private async Task WriteBufferToFileAsync(List<object> buffer, CancellationToken cancellationToken)
+    private async Task AppendEntryToFileAsync(object entry, CancellationToken cancellationToken)
     {
-        string json = JsonSerializer.Serialize(buffer, _jsonOptions);
-        await File.WriteAllTextAsync(_logFilePath, json, cancellationToken);
+        string json = JsonSerializer.Serialize(entry, _jsonOptions);
+        await File.AppendAllTextAsync(_logFilePath, json + Environment.NewLine, cancellationToken);
     }
 
     private static object? ExtractResponseValue(object? response)
@@ -161,7 +154,7 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
     {
         if (results.All(r => r.IsSuccess))
         {
-            return Array.Empty<object>();
+            return [];
         }
 
         return results

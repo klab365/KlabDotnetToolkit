@@ -39,7 +39,7 @@ jobs:
         run: mise run restore
 
       - name: Build
-        run: mise run build --config Release
+        run: mise run build Release -p:Version=0.0.0
 
       - name: Test
         run: mise run tests --output ./tmp

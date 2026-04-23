@@ -14,7 +14,7 @@ namespace Klab.Toolkit.Messaging;
 /// Messaging Handler Mediator
 /// This implementation is inspired by the MediatR library.
 /// </summary>
-internal class MessagingHandlerMediator
+internal sealed class MessagingHandlerMediator
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MessagingHandlerMediator> _logger;
@@ -39,9 +39,10 @@ internal class MessagingHandlerMediator
             EventHandlerWrapper? eventHandler = GetEventHandler(@event);
             if (eventHandler is null)
             {
-#pragma warning disable CA1873 // Avoid potentially expensive logging
-                _logger.LogDebug("No event handler found for event type {EventType}", @event.GetType());
-#pragma warning restore CA1873 // Avoid potentially expensive logging
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("No event handler found for event type {EventType}", @event.GetType());
+                }
                 return [];
             }
 
@@ -78,14 +79,20 @@ internal class MessagingHandlerMediator
 
     private EventHandlerWrapper? GetEventHandler(EventBase @event)
     {
-        EventHandlerWrapper? res = _eventHandlers.GetOrAdd(@event.GetType(), eventType =>
+        if (_eventHandlers.TryGetValue(@event.GetType(), out EventHandlerWrapper? cached))
         {
-            Type wrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(eventType);
-            object? wrapper = _serviceProvider.GetService(wrapperType);
-            return (EventHandlerWrapper)wrapper;
-        });
+            return cached;
+        }
 
-        return res;
+        Type wrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(@event.GetType());
+        EventHandlerWrapper? wrapper = (EventHandlerWrapper?)_serviceProvider.GetService(wrapperType);
+
+        if (wrapper != null)
+        {
+            _eventHandlers.TryAdd(@event.GetType(), wrapper);
+        }
+
+        return wrapper;
     }
 
     private RequestResponseHandlerWrapper GetRequestHandlerWrapper<TResponse>(IRequest<TResponse> request)

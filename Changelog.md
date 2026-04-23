@@ -10,12 +10,18 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
-## [Unreleased]
+## 3.0.0
 
-### Updated
+### Added
+
+* Add middleware functionality to the Messaging Library (pre-execution only)
+
+### Changed
 
 * Update Result pattern to change error to an interface and generate a generic Error class.
 * Rename Event Library to Messaging Library and update namespaces accordingly.
+* **Messaging**: Simplify event handler storage and retrieval in `Mediator` using improved data structures
+* **Messaging**: Optimize `FileMessagingLogger`, `MessagingHandlerMediator`, `MessagingModule`, and `MessagingProcessorJob` implementations for clarity and performance
 
 ## 2.13.2
 

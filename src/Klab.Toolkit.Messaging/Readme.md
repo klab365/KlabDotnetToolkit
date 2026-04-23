@@ -650,6 +650,91 @@ public class MyCustomLogger : IMediatorLogger
 }
 ```
 
+## Request Middleware
+
+Request middleware intercepts the request/response pipeline, enabling cross-cutting concerns such as logging, validation, caching, and retry logic. Middleware wraps around the actual request handler and is executed in registration order (outermost first).
+
+### Middleware Interfaces
+
+- **`IRequestMiddleware<TRequest, TResponse>`**: Middleware for standard request/response pairs.
+- **`IStreamRequestMiddleware<TRequest, TResponse>`**: Middleware for streaming request/response pairs.
+
+### Implementing Middleware
+
+Create a class implementing `IRequestMiddleware<TRequest, TResponse>`:
+
+```csharp
+public class LoggingMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
+{
+    private readonly ILogger<LoggingMiddleware<TRequest, TResponse>> _logger;
+
+    public LoggingMiddleware(ILogger<LoggingMiddleware<TRequest, TResponse>> logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<Result<TResponse>> HandleAsync(
+        TRequest request,
+        Func<TRequest, CancellationToken, Task<Result<TResponse>>> next,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Handling request {RequestType}", typeof(TRequest).Name);
+
+        Result<TResponse> response = await next(request, cancellationToken);
+
+        _logger.LogInformation(
+            "Handled request {RequestType} with {Status}",
+            typeof(TRequest).Name,
+            response.IsSuccess ? "success" : "failure");
+
+        return response;
+    }
+}
+```
+
+### Registering Middleware
+
+#### Per-Request Middleware
+
+Register middleware for a specific request/response pair using `AddRequestMiddleware`:
+
+```csharp
+services.AddRequestMiddleware<GetUserQuery, Result<User>, LoggingMiddleware<GetUserQuery, Result<User>>>(
+    lifetime: ServiceLifetime.Transient);
+```
+
+#### Global Middleware
+
+Register middleware that applies to **all** request/response pairs using `AddGlobalRequestMiddleware`:
+
+```csharp
+services.AddGlobalRequestMiddleware(typeof(LoggingMiddleware<,>), ServiceLifetime.Singleton);
+```
+
+When a request is sent, the DI container automatically resolves all `IRequestMiddleware<TRequest, TResponse>` registrations, including global ones.
+
+#### Middleware Execution Order
+
+Middleware is executed in registration order, outermost first. Global middleware is resolved alongside specific middleware, so the final ordering depends on registration order:
+
+```csharp
+// Global logging runs first for all requests
+services.AddGlobalRequestMiddleware(typeof(LoggingMiddleware<,>), ServiceLifetime.Singleton);
+
+// Specific caching runs next for GetUserQuery only
+services.AddGenericRequestMiddleware(typeof(GetUserQuery), typeof(Result<User>), typeof(CachingMiddleware<,>));
+
+// Specific validation runs last for GetUserQuery only
+services.AddGenericRequestMiddleware(typeof(GetUserQuery), typeof(Result<User>), typeof(ValidationMiddleware<,>));
+```
+
+The execution pipeline for `GetUserQuery` will be:
+
+1. `LoggingMiddleware<GetUserQuery, Result<User>>`
+2. `CachingMiddleware<GetUserQuery, Result<User>>`
+3. `ValidationMiddleware<GetUserQuery, Result<User>>`
+4. `GetUserQueryHandler`
+
 ## Troubleshooting
 
 ### Common Issues

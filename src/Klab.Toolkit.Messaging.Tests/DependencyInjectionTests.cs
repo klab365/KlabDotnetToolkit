@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Klab.Toolkit.Results;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Klab.Toolkit.Messaging.Tests;
 
@@ -223,4 +225,237 @@ public class DependencyInjectionTests
             yield return await Task.FromResult("item");
         }
     }
+}
+
+public class RegisterEventQueueTests
+{
+    [Fact]
+    public void AddMessagingModule_WithDefaultConfiguration_RegistersInMemoryMessageQueueAsSingleton()
+    {
+        ServiceCollection services = new();
+        services.AddMessagingModule();
+
+        ServiceProvider provider = services.BuildServiceProvider();
+
+        IEventQueue instance1 = provider.GetRequiredService<IEventQueue>();
+        IEventQueue instance2 = provider.GetRequiredService<IEventQueue>();
+        instance1.Should().BeOfType<InMemoryMessageQueue>();
+        instance1.Should().BeSameAs(instance2);
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithCustomEventQueueType_RegistersCustomType()
+    {
+        ServiceCollection services = new();
+        services.AddMessagingModule(cfg => cfg.EventQueueType = typeof(CustomEventQueue));
+
+        ServiceProvider provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IEventQueue>().Should().BeOfType<CustomEventQueue>();
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithTransientEventQueueLifetime_RegistersTransient()
+    {
+        ServiceCollection services = new();
+        services.AddMessagingModule(cfg => cfg.EventQueueLifetime = ServiceLifetime.Transient);
+
+        ServiceProvider provider = services.BuildServiceProvider();
+
+        IEventQueue instance1 = provider.GetRequiredService<IEventQueue>();
+        IEventQueue instance2 = provider.GetRequiredService<IEventQueue>();
+        instance1.Should().NotBeSameAs(instance2);
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithNullEventQueueType_ThrowsInvalidOperationException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddMessagingModule(cfg => cfg.EventQueueType = null);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Event queue type is not set*");
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithInvalidEventQueueType_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddMessagingModule(cfg => cfg.EventQueueType = typeof(NotAnEventQueue));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*Invalid event queue type*");
+    }
+
+    private sealed class CustomEventQueue : IEventQueue
+    {
+        public Task EnqueueAsync(EventBase @event, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public async IAsyncEnumerable<EventBase> DequeueAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return await Task.FromResult<EventBase>(new TestEvent1());
+        }
+    }
+
+    private sealed class NotAnEventQueue { }
+}
+
+public class RegisterMessagingLoggerTests
+{
+    [Fact]
+    public void AddMessagingModule_WithDefaultConfiguration_RegistersNullMessagingLoggerAsSingleton()
+    {
+        ServiceCollection services = new();
+        services.AddMessagingModule();
+
+        ServiceProvider provider = services.BuildServiceProvider();
+
+        IMessagingLogger instance1 = provider.GetRequiredService<IMessagingLogger>();
+        IMessagingLogger instance2 = provider.GetRequiredService<IMessagingLogger>();
+        instance1.Should().BeOfType<NullMessagingLogger>();
+        instance1.Should().BeSameAs(instance2);
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithNullMessagingLoggerType_ThrowsInvalidOperationException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddMessagingModule(cfg => cfg.MessagingLoggerType = null);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Messaging logger type is not set*");
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithInvalidMessagingLoggerType_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddMessagingModule(cfg => cfg.MessagingLoggerType = typeof(NotAMessagingLogger));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*Invalid messaging logger type*");
+    }
+
+    [Fact]
+    public void AddMessagingModule_WithHostedServiceLogger_RegistersLoggerAsSingleton()
+    {
+        ServiceCollection services = new();
+
+        Action act = () => services.AddMessagingModule(cfg => cfg.MessagingLoggerType = typeof(HostedMessagingLogger));
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    private sealed class NotAMessagingLogger { }
+
+    private sealed class HostedMessagingLogger : IMessagingLogger, IHostedService
+    {
+        public ValueTask LogEventAsync(EventBase @event, Result[] handlerResults) => ValueTask.CompletedTask;
+        public ValueTask LogCommandAsync(Type requestType, object requestData, object response) => ValueTask.CompletedTask;
+        public ValueTask LogStreamRequestAsync(Type requestType, object requestData, object response) => ValueTask.CompletedTask;
+        public Task FlushAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+}
+
+public class AddGlobalRequestMiddlewareTests
+{
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithValidType_RegistersOpenGenericDescriptor()
+    {
+        ServiceCollection services = new();
+        services.AddGlobalRequestMiddleware(typeof(GlobalMiddleware<,>));
+
+        ServiceDescriptor descriptor = services.Should().ContainSingle(d => d.ServiceType == typeof(IRequestMiddleware<,>)).Subject;
+        descriptor.ImplementationType.Should().Be(typeof(GlobalMiddleware<,>));
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithTransientLifetime_RegistersTransient()
+    {
+        ServiceCollection services = new();
+        services.AddGlobalRequestMiddleware(typeof(GlobalMiddleware<,>), ServiceLifetime.Transient);
+
+        ServiceDescriptor descriptor = services.Should().ContainSingle(d => d.ServiceType == typeof(IRequestMiddleware<,>)).Subject;
+        descriptor.Lifetime.Should().Be(ServiceLifetime.Transient);
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithNullServices_ThrowsArgumentNullException()
+    {
+        IServiceCollection services = null!;
+        Action act = () => services.AddGlobalRequestMiddleware(typeof(GlobalMiddleware<,>));
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("services");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithNullMiddlewareType_ThrowsArgumentNullException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddGlobalRequestMiddleware(null!);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("middlewareType");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithClosedGenericType_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddGlobalRequestMiddleware(typeof(List<string>));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*open generic*");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithSingleTypeParameter_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddGlobalRequestMiddleware(typeof(SingleParamMiddleware<>));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*two generic parameters*");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithAbstractType_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddGlobalRequestMiddleware(typeof(AbstractMiddleware<,>));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*concrete class*");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_WithTypeNotImplementingInterface_ThrowsArgumentException()
+    {
+        ServiceCollection services = new();
+        Action act = () => services.AddGlobalRequestMiddleware(typeof(NotAMiddleware<,>));
+
+        act.Should().Throw<ArgumentException>().WithMessage("*IRequestMiddleware*");
+    }
+
+    [Fact]
+    public void AddGlobalRequestMiddleware_ReturnsServiceCollection()
+    {
+        ServiceCollection services = new();
+        IServiceCollection result = services.AddGlobalRequestMiddleware(typeof(GlobalMiddleware<,>));
+
+        result.Should().BeSameAs(services);
+    }
+
+    private sealed class GlobalMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
+        where TResponse : notnull
+    {
+        public Task<TResponse> HandleAsync(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+            => next();
+    }
+
+    private sealed class SingleParamMiddleware<T> { }
+
+    private abstract class AbstractMiddleware<TRequest, TResponse> : IRequestMiddleware<TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
+        where TResponse : notnull
+    {
+        public abstract Task<TResponse> HandleAsync(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken);
+    }
+
+    private sealed class NotAMiddleware<TRequest, TResponse> { }
 }

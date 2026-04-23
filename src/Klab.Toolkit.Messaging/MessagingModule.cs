@@ -26,7 +26,7 @@ public static class MessagingModule
         services.AddSingleton<MessagingHandlerMediator>();
         services.AddSingleton<IMediator, Mediator>();
         services.AddHostedService<MessagingProcessorJob>();
-        services.AddTransient<IEventHandlerProcessingStrategy, TaskWhenAllPublisher>();
+        services.AddSingleton<IEventHandlerProcessingStrategy, TaskWhenAllPublisher>();
         return services;
     }
 
@@ -48,26 +48,22 @@ public static class MessagingModule
 
     private static void RegisterMessagingLogger(IServiceCollection services, MessagingModuleConfiguration configuration)
     {
-        if (configuration.MessagingLoggerType != null)
+        if (configuration.MessagingLoggerType == null)
         {
-            if (!typeof(IMessagingLogger).IsAssignableFrom(configuration.MessagingLoggerType))
-            {
-                throw new ArgumentException("Invalid messaging logger type");
-            }
-
-            services.AddSingleton(typeof(IMessagingLogger), configuration.MessagingLoggerType);
-
-            if (typeof(IHostedService).IsAssignableFrom(configuration.MessagingLoggerType))
-            {
-                services.AddSingleton(provider => (IHostedService)provider.GetRequiredService<IMessagingLogger>());
-                services.AddHostedService(provider => (IHostedService)provider.GetRequiredService<IMessagingLogger>());
-            }
+            throw new InvalidOperationException("Messaging logger type is not set");
         }
-        else
+
+        if (!typeof(IMessagingLogger).IsAssignableFrom(configuration.MessagingLoggerType))
         {
-            services.AddSingleton<FileMessagingLogger>();
-            services.AddSingleton<IMessagingLogger>(provider => provider.GetRequiredService<FileMessagingLogger>());
-            services.AddHostedService(provider => provider.GetRequiredService<FileMessagingLogger>());
+            throw new ArgumentException("Invalid messaging logger type");
+        }
+
+        services.AddSingleton(typeof(IMessagingLogger), configuration.MessagingLoggerType);
+
+        if (typeof(IHostedService).IsAssignableFrom(configuration.MessagingLoggerType))
+        {
+            services.AddSingleton(provider => (IHostedService)provider.GetRequiredService<IMessagingLogger>());
+            services.AddHostedService(provider => (IHostedService)provider.GetRequiredService<IMessagingLogger>());
         }
     }
 }

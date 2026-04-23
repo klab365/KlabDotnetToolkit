@@ -1,7 +1,10 @@
+[settings]
+experimental = true
+
 [tools]
-dotnet = {version = "10.0", os = ["linux"]}
-"dotnet:dotnet-coverage" = {version = "18.5.2", os = ["linux"]}
-"dotnet:dotnet-format" = {version = "5.1.250801", os = ["linux"]}
+dotnet = { version = "10.0", os = ["linux"] }
+"dotnet:dotnet-coverage" = { version = "18.5.2", os = ["linux"] }
+"dotnet:dotnet-format" = { version = "5.1.250801", os = ["linux"] }
 
 [tasks]
 format = "dotnet format --verbosity diagnostic"
@@ -27,7 +30,13 @@ dotnet coverage collect -f xml \
 [tasks.build]
 description = "Builds the project using the specified configuration."
 usage = '''
-flag "--config <config>" help="Build configuration (e.g., Debug, Release). Defaults to Release." default="Debug"
+arg "<config>" help="Build configuration (e.g., Debug, Release). Defaults to Release." default="Debug"
+arg "args" help="Additional arguments passed to dotnet build" default=""
 '''
-run = "dotnet build --configuration ${usage_config?} --no-restore"
+run = '''
 
+echo "Building project with configuration: ${usage_config?}"
+echo "Additional arguments: ${usage_args}"
+
+dotnet build --configuration ${usage_config?} "${usage_args}"
+'''

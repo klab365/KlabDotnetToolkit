@@ -10,7 +10,7 @@ namespace Klab.Toolkit.Messaging;
 /// <summary>
 /// This is a publisher strategy that uses Task.WhenAll to publish events
 /// </summary>
-internal class TaskWhenAllPublisher : IEventHandlerProcessingStrategy
+internal sealed class TaskWhenAllPublisher : IEventHandlerProcessingStrategy
 {
     public Task<Result[]> Handle(IEnumerable<EventHandlerExecutor> handlerExecutors, EventBase @event, CancellationToken cancellationToken)
     {
