@@ -569,9 +569,9 @@ Key differences:
 - Use `SendAsync` instead of `Send`
 - Registration uses `AddRequestResponseHandler` instead of `AddMediatR`
 
-## Event Bus Logging
+## Logging
 
-The event bus supports configurable logging of events and commands via the `IMediatorLogger` interface.
+The mediator supports configurable logging of events and commands via the `IMediatorLogger` interface.
 
 ### Configuration
 
