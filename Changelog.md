@@ -10,6 +10,14 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## [3.1.0](https://github.com/klab365/KlabDotnetToolkit/compare/v3.0.0...v3.1.0) (2026-10-04)
+
+
+### Features
+
+* add configurable IEventBusLogger interface for events and commands ([a202346](https://github.com/klab365/KlabDotnetToolkit/commit/a202346ad7c4b7ffd7b212e5df06919ade268677))
+* add configurable IEventBusLogger interface for events and commands ([f6b62e5](https://github.com/klab365/KlabDotnetToolkit/commit/f6b62e52d36525575352384ed6da1e2f59b4e83c)), closes [#39](https://github.com/klab365/KlabDotnetToolkit/issues/39)
+
 ## 3.0.0
 
 ### Added
