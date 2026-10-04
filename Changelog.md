@@ -10,6 +10,16 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## [3.1.1](https://github.com/klab365/KlabDotnetToolkit/compare/v3.1.0...v3.1.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* prefix package glob ([f84f628](https://github.com/klab365/KlabDotnetToolkit/commit/f84f628c5817aa465d49bd51afc8e8c77956d3c3))
+* publish releases from release please ([edeb72d](https://github.com/klab365/KlabDotnetToolkit/commit/edeb72dcb75c624c767514f3c9ff76c2e0d609cc))
+* publish releases from release please ([f1c1e82](https://github.com/klab365/KlabDotnetToolkit/commit/f1c1e82aa3a3c6c125341a92759dbd2464d2fbd4))
+* scope release permissions ([37c0c52](https://github.com/klab365/KlabDotnetToolkit/commit/37c0c522d444e40e5a3a07b32252bc04ebd9a824))
+
 ## [3.1.0](https://github.com/klab365/KlabDotnetToolkit/compare/v3.0.0...v3.1.0) (2026-10-04)
 
 
