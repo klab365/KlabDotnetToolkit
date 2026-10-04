@@ -27,6 +27,9 @@ jobs:
   publish:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -45,7 +48,11 @@ jobs:
       - name: Build
         run: mise run build Release -p:Version=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
 
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: BurakKizilkaya
+
       - name: Publish
-        env:
-          SECRETS_NUGETORG_API: ${{ secrets.NUGETORG_API }}
-        run: dotnet nuget push ./**/*.nupkg --skip-duplicate --api-key "$SECRETS_NUGETORG_API" --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./**/*.nupkg --skip-duplicate --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
