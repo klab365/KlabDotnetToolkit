@@ -12,8 +12,41 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      major: ${{ steps.release.outputs.major }}
+      minor: ${{ steps.release.outputs.minor }}
+      patch: ${{ steps.release.outputs.patch }}
     steps:
-      - uses: googleapis/release-please-action@v4
+      - id: release
+        uses: googleapis/release-please-action@v4
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: true
+          cache: true
+          experimental: true
+
+      - name: Restore dependencies
+        run: mise run restore
+
+      - name: Build
+        run: mise run build Release -p:Version=${{ needs.release-please.outputs.major }}.${{ needs.release-please.outputs.minor }}.${{ needs.release-please.outputs.patch }}
+
+      - name: Publish
+        env:
+          SECRETS_NUGETORG_API: ${{ secrets.NUGETORG_API }}
+        run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key "$SECRETS_NUGETORG_API" --source https://api.nuget.org/v3/index.json
