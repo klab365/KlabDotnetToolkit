@@ -10,6 +10,14 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## [3.1.2](https://github.com/klab365/KlabDotnetToolkit/compare/v3.1.1...v3.1.2) (2026-10-04)
+
+
+### Bug Fixes
+
+* publish releases with NuGet trusted publishing ([9d9c4aa](https://github.com/klab365/KlabDotnetToolkit/commit/9d9c4aa5ec0eb41f5567dd1371d947e6a692639d))
+* publish releases with NuGet trusted publishing ([5ee5454](https://github.com/klab365/KlabDotnetToolkit/commit/5ee545454e02fad6e73a3e2129d241aa81a052ce))
+
 ## [3.1.1](https://github.com/klab365/KlabDotnetToolkit/compare/v3.1.0...v3.1.1) (2026-10-04)
 
 
