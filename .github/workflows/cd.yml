@@ -2,7 +2,7 @@ name: CD
 on:
   push:
     tags:
-      - "V*.*.*"
+      - "v*.*.*"
 
 jobs:
   build-test-release:
@@ -18,8 +18,7 @@ jobs:
           experimental: true
 
       - name: Extract version number
-        id: extract_version
-        run: echo "version=$(echo ${{ github.ref }} | sed 's/refs\/tags\/V\(.*\)/\1/')" >> $GITHUB_ENV
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
       - name: Restore dependencies
         run: mise run restore
