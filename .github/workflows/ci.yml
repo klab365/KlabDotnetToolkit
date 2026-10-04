@@ -7,6 +7,26 @@ on:
     branches: [main]
 
 jobs:
+  require-rebase:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify branch was rebased
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          git merge-base --is-ancestor "origin/${{ github.base_ref }}" HEAD
+
+          if [ -n "$(git rev-list --merges "origin/${{ github.base_ref }}..HEAD")" ]; then
+            echo "Rebase the branch onto ${{ github.base_ref }} before merging."
+            exit 1
+          fi
+
   format:
     runs-on: ubuntu-latest
 
