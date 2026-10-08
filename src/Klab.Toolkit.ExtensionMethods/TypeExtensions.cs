@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Klab.Toolkit.Common.Extensions;
@@ -51,7 +52,7 @@ public static class TypeExtensions
     /// <param name="pluggedType">The plugged type.</param>
     /// <param name="templateType">The template type.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Type"/> objects representing the interfaces that close to the template type.</returns>
-    public static IEnumerable<Type> FindInterfacesThatClose(this Type pluggedType, Type templateType)
+    public static IEnumerable<Type> FindInterfacesThatClose([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type pluggedType, Type templateType)
     {
         return FindInterfacesThatClosesCore(pluggedType, templateType).Distinct();
     }
@@ -62,7 +63,7 @@ public static class TypeExtensions
     /// <param name="pluggedType">The plugged type.</param>
     /// <param name="templateType">The template type.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Type"/> objects representing the interfaces that close to the template type.</returns>
-    public static IEnumerable<Type> FindInterfacesThatClosesCore(Type pluggedType, Type templateType)
+    public static IEnumerable<Type> FindInterfacesThatClosesCore([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type pluggedType, Type templateType)
     {
         if (pluggedType == null)
         {

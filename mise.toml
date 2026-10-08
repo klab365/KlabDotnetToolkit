@@ -2,9 +2,9 @@
 experimental = true
 
 [tools]
-dotnet = { version = "10.0", os = ["linux"] }
-"dotnet:dotnet-coverage" = { version = "18.5.2", os = ["linux"] }
-"dotnet:dotnet-format" = { version = "5.1.250801", os = ["linux"] }
+dotnet = "10.0"
+"dotnet:dotnet-coverage" = "18.5.2"
+"dotnet:dotnet-format" = "5.1.250801"
 
 [tasks]
 format = "dotnet format --verbosity diagnostic"
@@ -21,7 +21,6 @@ flag "--output <output>" help="Output directory for test results and coverage re
 arg "args" help="Additional arguments to pass to dotnet test." default=""
 '''
 run = '''
-#!/usr/bin/env bash
 dotnet coverage collect -f xml \
     -o ${usage_output?}/coverage.xml \
     "dotnet test --logger:junit;MethodFormat=Class;LogFilePath=${usage_output?}/{assembly}.results.xml ${usage_args?}"
@@ -34,7 +33,6 @@ arg "<config>" help="Build configuration (e.g., Debug, Release). Defaults to Rel
 arg "args" help="Additional arguments passed to dotnet build" default=""
 '''
 run = '''
-
 echo "Building project with configuration: ${usage_config?}"
 echo "Additional arguments: ${usage_args}"
 

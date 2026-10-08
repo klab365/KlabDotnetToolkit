@@ -43,6 +43,24 @@ jobs:
       - name: Run dotnet format
         run: mise run check-format
 
+  aot-compatibility:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+        with:
+          install: true
+          cache: true
+          experimental: true
+
+      - name: Publish and run Native AOT smoke test
+        run: |
+          dotnet publish src/Klab.Toolkit.AotSmokeTest/Klab.Toolkit.AotSmokeTest.csproj -c Release -r linux-x64 -p:Version=0.0.0
+          ./src/Klab.Toolkit.AotSmokeTest/bin/Release/net10.0/linux-x64/publish/Klab.Toolkit.AotSmokeTest
+
   build-and-test:
     runs-on: ubuntu-latest
 

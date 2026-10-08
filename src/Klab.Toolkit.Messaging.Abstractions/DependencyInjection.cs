@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Klab.Toolkit.Messaging;
@@ -15,7 +16,7 @@ public static class DependencyInjection
     /// <typeparam name="THandler"></typeparam>
     /// <param name="services"></param>
     /// <param name="lifetime"></param>
-    public static void AddEventHandler<TEvent, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddEventHandler<TEvent, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TEvent : EventBase
         where THandler : class, IEventHandler<TEvent>
     {
@@ -40,6 +41,7 @@ public static class DependencyInjection
         }
 
         services.AddTransient<EventHandlerWrapper<TEvent>>();
+        services.AddSingleton<IEventHandlerWrapperRegistration>(provider => new EventHandlerWrapperRegistration<TEvent>(provider));
     }
 
     /// <summary>
@@ -51,7 +53,7 @@ public static class DependencyInjection
     /// <param name="services"></param>
     /// <param name="lifetime"></param>
     /// <exception cref="ArgumentException"></exception>
-    public static void AddRequestResponseHandler<TRequest, TResponse, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddRequestResponseHandler<TRequest, TResponse, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TRequest : IRequest<TResponse>
         where TResponse : notnull
         where THandler : class, IRequestHandler<TRequest, TResponse>
@@ -77,6 +79,7 @@ public static class DependencyInjection
         }
 
         services.AddTransient<RequestResponseHandlerWrapper<TRequest, TResponse>>();
+        services.AddSingleton<IRequestResponseHandlerWrapperRegistration>(provider => new RequestResponseHandlerWrapperRegistration<TRequest, TResponse>(provider));
     }
 
     /// <summary>
@@ -88,13 +91,23 @@ public static class DependencyInjection
     /// <typeparam name="TMiddleware">The middleware implementation type.</typeparam>
     /// <param name="services">The service collection.</param>
     /// <param name="lifetime">The DI lifetime of the middleware. Defaults to Transient.</param>
-    public static void AddRequestMiddleware<TRequest, TResponse, TMiddleware>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddRequestMiddleware<TRequest, TResponse, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TMiddleware>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TRequest : IRequest<TResponse>
         where TResponse : notnull
         where TMiddleware : class, IRequestMiddleware<TRequest, TResponse>
     {
-        ServiceDescriptor descriptor = new(typeof(IRequestMiddleware<TRequest, TResponse>), typeof(TMiddleware), lifetime);
-        services.Add(descriptor);
+        if (lifetime == ServiceLifetime.Singleton)
+        {
+            services.AddSingleton<IRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
+        else if (lifetime == ServiceLifetime.Scoped)
+        {
+            services.AddScoped<IRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
+        else
+        {
+            services.AddTransient<IRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
     }
 
     /// <summary>
@@ -108,17 +121,11 @@ public static class DependencyInjection
     /// <param name="middlewareType">The open generic middleware implementation type.</param>
     /// <param name="lifetime">The DI lifetime of the middleware. Defaults to Singleton.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("Open-generic middleware registration is not supported with trimming or Native AOT.")]
     public static IServiceCollection AddGlobalRequestMiddleware(this IServiceCollection services, Type middlewareType, ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        if (services is null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (middlewareType is null)
-        {
-            throw new ArgumentNullException(nameof(middlewareType));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(middlewareType);
 
         if (!middlewareType.IsGenericTypeDefinition)
         {
@@ -165,13 +172,23 @@ public static class DependencyInjection
     /// <typeparam name="TMiddleware">The middleware implementation type.</typeparam>
     /// <param name="services">The service collection.</param>
     /// <param name="lifetime">The DI lifetime of the middleware. Defaults to Transient.</param>
-    public static void AddStreamRequestMiddleware<TRequest, TResponse, TMiddleware>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddStreamRequestMiddleware<TRequest, TResponse, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TMiddleware>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TRequest : IStreamRequest<TResponse>
         where TResponse : notnull
         where TMiddleware : class, IStreamRequestMiddleware<TRequest, TResponse>
     {
-        ServiceDescriptor descriptor = new(typeof(IStreamRequestMiddleware<TRequest, TResponse>), typeof(TMiddleware), lifetime);
-        services.Add(descriptor);
+        if (lifetime == ServiceLifetime.Singleton)
+        {
+            services.AddSingleton<IStreamRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
+        else if (lifetime == ServiceLifetime.Scoped)
+        {
+            services.AddScoped<IStreamRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
+        else
+        {
+            services.AddTransient<IStreamRequestMiddleware<TRequest, TResponse>, TMiddleware>();
+        }
     }
 
     /// <summary>
@@ -183,7 +200,7 @@ public static class DependencyInjection
     /// <param name="services"></param>
     /// <param name="lifetime"></param>
     /// <exception cref="ArgumentException"></exception>
-    public static void AddStreamRequestResponseHandler<TRequest, TResponse, THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
+    public static void AddStreamRequestResponseHandler<TRequest, TResponse, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TRequest : IStreamRequest<TResponse>
         where TResponse : notnull
         where THandler : class, IStreamRequestHandler<TRequest, TResponse>
@@ -209,5 +226,6 @@ public static class DependencyInjection
         }
 
         services.AddTransient<StreamRequestResponseHandlerWrapper<TRequest, TResponse>>();
+        services.AddSingleton<IStreamRequestResponseHandlerWrapperRegistration>(provider => new StreamRequestResponseHandlerWrapperRegistration<TRequest, TResponse>(provider));
     }
 }

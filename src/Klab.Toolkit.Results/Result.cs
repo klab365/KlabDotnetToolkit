@@ -83,7 +83,7 @@ public record Result
 /// Generic Result
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public record Result<T> : Result where T : notnull
+public record Result<T> : Result, IResultWithValue where T : notnull
 {
     private readonly T _value;
 
@@ -91,6 +91,8 @@ public record Result<T> : Result where T : notnull
     /// Gets value which contains the result of the operation.
     /// </summary>
     public T Value => IsSuccess ? _value : throw new InvalidOperationException($"Cannot access value: operation failed with error: {Error}");
+
+    object? IResultWithValue.GetValue() => IsSuccess ? _value : null;
 
     /// <summary>
     /// Implicit conversion from Error to Result (failure case)

@@ -246,18 +246,21 @@ public class MessagingLoggerTests : IAsyncDisposable
         logContent.Should().NotContain("stream-value");
     }
 
-    private sealed class TestRequest
+    private sealed class TestRequest : IRecordable
     {
         public string Value { get; set; } = string.Empty;
+        public string ToRecordingDataJson() => $"{{\"Value\":\"{Value}\"}}";
     }
 
-    private sealed class TestResponse
+    private sealed class TestResponse : IRecordable
     {
         public string Result { get; set; } = string.Empty;
+        public string ToRecordingDataJson() => $"{{\"Result\":\"{Result}\"}}";
     }
 
-    private sealed class TestStreamRequest
+    private sealed class TestStreamRequest : IRecordable
     {
         public string Value { get; set; } = string.Empty;
+        public string ToRecordingDataJson() => $"{{\"Value\":\"{Value}\"}}";
     }
 }

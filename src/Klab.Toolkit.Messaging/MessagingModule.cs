@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -15,6 +16,7 @@ public static class MessagingModule
     /// <param name="services"></param>
     /// <param name="configure" />
     /// <returns></returns>
+    [RequiresUnreferencedCode("Type-based queue and logger registration is not supported with trimming or Native AOT. Use the generic overload.")]
     public static IServiceCollection AddMessagingModule(this IServiceCollection services, Action<MessagingModuleConfiguration>? configure = default)
     {
         MessagingModuleConfiguration configuration = new();
@@ -30,6 +32,36 @@ public static class MessagingModule
         return services;
     }
 
+    /// <summary>
+    /// Adds the messaging module with statically known queue and logger types.
+    /// </summary>
+    /// <typeparam name="TLogger">The messaging logger implementation.</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Optional module configuration.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddMessagingModule<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TLogger>(this IServiceCollection services, Action<MessagingModuleConfiguration>? configure = default)
+        where TLogger : class, IMessagingLogger
+    {
+        MessagingModuleConfiguration configuration = new();
+        configure?.Invoke(configuration);
+        services.AddSingleton(configuration);
+        services.AddLogging();
+        services.AddSingleton<IEventQueue, InMemoryMessageQueue>();
+        services.AddSingleton<TLogger>();
+        services.AddSingleton<IMessagingLogger>(provider => provider.GetRequiredService<TLogger>());
+        if (typeof(IHostedService).IsAssignableFrom(typeof(TLogger)))
+        {
+            services.AddSingleton<IHostedService>(provider => (IHostedService)provider.GetRequiredService<TLogger>());
+        }
+
+        services.AddSingleton<MessagingHandlerMediator>();
+        services.AddSingleton<IMediator, Mediator>();
+        services.AddHostedService<MessagingProcessorJob>();
+        services.AddSingleton<IEventHandlerProcessingStrategy, TaskWhenAllPublisher>();
+        return services;
+    }
+
+    [RequiresUnreferencedCode("Registering implementations by Type is not supported with trimming or Native AOT.")]
     private static void RegisterEventQueue(IServiceCollection services, MessagingModuleConfiguration configuration)
     {
         if (configuration.EventQueueType == null)
@@ -46,6 +78,7 @@ public static class MessagingModule
         services.Add(eventQueueDescriptor);
     }
 
+    [RequiresUnreferencedCode("Registering implementations by Type is not supported with trimming or Native AOT.")]
     private static void RegisterMessagingLogger(IServiceCollection services, MessagingModuleConfiguration configuration)
     {
         if (configuration.MessagingLoggerType == null)

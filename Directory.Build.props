@@ -5,7 +5,7 @@
     <Company>Klab</Company>
     <PackageTags>toolkit</PackageTags>
     <AnalysisMode>Recommended</AnalysisMode>
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildProjectName)' != 'Klab.Toolkit.AotSmokeTest'">net8.0;net9.0;net10.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>AnyCpu</PlatformTarget>
   </PropertyGroup>
@@ -26,6 +26,8 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+    <EnableTrimAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</EnableTrimAnalyzer>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -33,7 +35,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+  <ItemGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) and '$(MSBuildProjectName)' != 'Klab.Toolkit.AotSmokeTest'">
     <None Include="$(MSBuildProjectDirectory)/Readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
@@ -75,7 +77,9 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <PlatformTarget>X64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <IsTestProject>true</IsTestProject>
+    <IsAotCompatible>false</IsAotCompatible>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 </Project>
