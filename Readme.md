@@ -216,40 +216,46 @@ public sealed class EmailAddress : ValueObject
 
 ### Prerequisites
 
-- [.NET SDK 6.0+](https://dotnet.microsoft.com/download)
-- [Just](https://github.com/casey/just) - Command runner (optional but recommended)
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download)
+- [mise](https://mise.jdx.dev/) - task runner and tool version manager
 
 ### Building the Solution
 
 ```bash
-# Using Just (recommended)
-just build
+# Debug build (default)
+mise run build
 
-# Or using dotnet CLI
-dotnet build
+# Release build
+mise run build Release
 ```
 
 ### Running Tests
 
 ```bash
-# All tests
-just test
+# Run all tests and collect coverage in ./tmp
+mise run tests
 
-# Or using dotnet CLI
-dotnet test
+# Specify an output directory for test results and coverage
+mise run tests --output ./my-reports
 ```
 
 ### Available Commands
 
 ```bash
-# Clean build artifacts
-just clean
+# Restore dependencies
+mise run restore
+
+# Check formatting
+mise run check-format
 
 # Format code
-just format
+mise run format
 
-# Add new projects to solution
-just add-projects
+# Clean build artifacts
+mise run clean
+
+# Run formatting checks and tests
+mise run check
 ```
 
 ## 📋 Compatibility
