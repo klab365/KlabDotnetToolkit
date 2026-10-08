@@ -10,6 +10,17 @@ This file present the software status in form of a "Changelog".
 
 This document is valid within the scope of the work for all projects.
 
+## [4.0.0](https://github.com/klab365/KlabDotnetToolkit/compare/v3.1.2...v4.0.0) (2026-10-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* add Native AOT support across libraries
+
+### Features
+
+* add Native AOT support across libraries ([e99a62e](https://github.com/klab365/KlabDotnetToolkit/commit/e99a62e8347ea3e9673a4a79ecf877a262de29fd))
+
 ## [3.1.2](https://github.com/klab365/KlabDotnetToolkit/compare/v3.1.1...v3.1.2) (2026-10-04)
 
 
