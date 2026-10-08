@@ -31,7 +31,7 @@ dotnet add package Klab.Toolkit.ValueObjects
 
 ## 📦 Packages
 
-### 🎯 [Klab.Toolkit.Messaging](src/Klab.Toolkit.Messaging/)
+### 🎯 [Klab.Toolkit.Messaging](src/Klab.Toolkit.Messaging/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.Messaging/)
 **Messaging (mediator pattern) made simple**
 
 A comprehensive event-driven communication system supporting three patterns:
@@ -62,7 +62,7 @@ await foreach (var activity in mediator.Stream(new GetUserActivityStream(userId)
 
 ---
 
-### ✅ [Klab.Toolkit.Results](src/Klab.Toolkit.Results/)
+### ✅ [Klab.Toolkit.Results](src/Klab.Toolkit.Results/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.Results/)
 **Functional error handling without exceptions**
 
 Implements the Result pattern for explicit error handling, eliminating unexpected exceptions and making error flows predictable.
@@ -91,7 +91,7 @@ string message = result.Match(
 
 ---
 
-### 🔧 [Klab.Toolkit.Common](src/Klab.Toolkit.Common/)
+### 🔧 [Klab.Toolkit.Common](src/Klab.Toolkit.Common/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.Common/)
 **Shared abstractions and utilities**
 
 Common interfaces and utilities used across the toolkit, promoting consistency and testability.
@@ -121,7 +121,7 @@ public class OrderService
 
 ---
 
-### 🚀 [Klab.Toolkit.ExtensionMethods](src/Klab.Toolkit.ExtensionMethods/)
+### 🚀 [Klab.Toolkit.ExtensionMethods](src/Klab.Toolkit.ExtensionMethods/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.ExtensionMethods/)
 **Powerful extensions for common types**
 
 Extension methods that enhance built-in .NET types with frequently needed functionality.
@@ -149,7 +149,7 @@ Type underlyingType = typeof(int?).GetUnderlyingType();
 
 ---
 
-### 🏗️ [Klab.Toolkit.DI](src/Klab.Toolkit.DI/)
+### 🏗️ [Klab.Toolkit.DI](src/Klab.Toolkit.DI/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.DI/)
 **Advanced dependency injection patterns**
 
 Utilities for complex dependency injection scenarios, including keyed factories and dynamic resolution.
@@ -173,7 +173,7 @@ var processor = factory.Create("stripe");
 
 ---
 
-### 💎 [Klab.Toolkit.ValueObjects](src/Klab.Toolkit.ValueObjects/)
+### 💎 [Klab.Toolkit.ValueObjects](src/Klab.Toolkit.ValueObjects/) · [NuGet](https://www.nuget.org/packages/Klab.Toolkit.ValueObjects/)
 **Domain-driven design value objects**
 
 Base classes and utilities for creating immutable value objects that encapsulate business rules and validation.
@@ -216,40 +216,46 @@ public sealed class EmailAddress : ValueObject
 
 ### Prerequisites
 
-- [.NET SDK 6.0+](https://dotnet.microsoft.com/download)
-- [Just](https://github.com/casey/just) - Command runner (optional but recommended)
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download)
+- [mise](https://mise.jdx.dev/) - task runner and tool version manager
 
 ### Building the Solution
 
 ```bash
-# Using Just (recommended)
-just build
+# Debug build (default)
+mise run build
 
-# Or using dotnet CLI
-dotnet build
+# Release build
+mise run build Release
 ```
 
 ### Running Tests
 
 ```bash
-# All tests
-just test
+# Run all tests and collect coverage in ./tmp
+mise run tests
 
-# Or using dotnet CLI
-dotnet test
+# Specify an output directory for test results and coverage
+mise run tests --output ./my-reports
 ```
 
 ### Available Commands
 
 ```bash
-# Clean build artifacts
-just clean
+# Restore dependencies
+mise run restore
+
+# Check formatting
+mise run check-format
 
 # Format code
-just format
+mise run format
 
-# Add new projects to solution
-just add-projects
+# Clean build artifacts
+mise run clean
+
+# Run formatting checks and tests
+mise run check
 ```
 
 ## 📋 Compatibility
