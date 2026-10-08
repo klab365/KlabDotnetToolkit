@@ -39,8 +39,8 @@ The primary purpose of the `Klab.Toolkit.Messaging` package is to facilitate var
 var builder = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
-        // Register the event module with default configuration
-        services.AddMessagingModule();
+        // Register the module with its AOT-safe default queue and logger
+        services.AddMessagingModule<NullMessagingLogger>();
 
         // Register event handlers
         services.AddNotificationHandler<UserRegisteredEvent, UserWelcomeEmailHandler>();
@@ -57,6 +57,19 @@ var builder = Host.CreateDefaultBuilder()
 var host = builder.Build();
 await host.StartAsync();
 ```
+
+## Recording
+
+`FileMessagingLogger` records payloads only for types implementing `IRecordable`. Implementations provide valid JSON explicitly, so recording does not inspect application types using reflection. Non-recordable payloads are omitted; timestamps, message type names, and handler errors are still recorded.
+
+```csharp
+public sealed record OrderCreatedEvent(int OrderId, decimal Total) : EventBase, IRecordable
+{
+    public string ToRecordingDataJson() => $$"""{"OrderId":{{OrderId}},"Total":{{Total}}}""";
+}
+```
+
+Use the generic `AddMessagingModule<TLogger>()` overload for trimming and Native AOT. The overload taking `MessagingModuleConfiguration` and `Type`-based implementation properties is intended for non-AOT applications.
 
 ## Event Publishing and Subscribing
 
@@ -569,86 +582,37 @@ Key differences:
 - Use `SendAsync` instead of `Send`
 - Registration uses `AddRequestResponseHandler` instead of `AddMediatR`
 
-## Logging
+## Recording and Logging
 
-The mediator supports configurable logging of events and commands via the `IMediatorLogger` interface.
-
-### Configuration
-
-To choose a logger implementation, set the `MessagingLoggerType` in the event module configuration:
+For Native AOT applications, use the generic registration overload. The default logger is `NullMessagingLogger`:
 
 ```csharp
-services.AddMessagingModule(config =>
+services.AddMessagingModule<NullMessagingLogger>();
+```
+
+To write JSON Lines recordings to a file, register `FileMessagingLogger`:
+
+```csharp
+services.AddMessagingModule<FileMessagingLogger>(configuration =>
 {
-    // Use FileMessagingLogger (default) - reads config from IConfiguration
-    config.MessagingLoggerType = typeof(FileMessagingLogger);
-
-    // Or use NullMessagingLogger to disable logging
-    config.MessagingLoggerType = typeof(NullMessagingLogger);
-
-    // Or use your custom logger
-    config.MessagingLoggerType = typeof(MyCustomLogger);
+    configuration.MessagingLoggerPath = "recordings/events.jsonl";
 });
 ```
 
-To set the path for the `FileMessagingLogger`, use the `MessagingLoggerPath` configuration key:
+The file logger is hosted with the messaging module. It writes one JSON object per line with a timestamp, message category and type, optional payload, and handler errors.
+
+Payloads are included only when their type implements `IRecordable`. The implementation returns valid JSON explicitly; payloads without this interface are omitted. This avoids reflection and runtime JSON metadata discovery under Native AOT.
 
 ```csharp
-services.AddMessagingModule(config =>
+public sealed record UserRegisteredEvent(int UserId) : EventBase, IRecordable
 {
-    config.MessagingLoggerType = typeof(FileMessagingLogger);
-    config.MessagingLoggerPath = "C:\\Logs\\eventbus.log"; // Can also use environment variables
-});
-```
-
-### Log Output Format
-
-Events are logged as JSON with the following structure:
-
-```json
-[
-  {
-    "Timestamp": "2026-03-17T10:30:00Z",
-    "Type": "Event",
-    "Event": { "Id": "...", "CreatedAt": "...", ... },
-    "Results": []
-  },
-  {
-    "Timestamp": "2026-03-17T10:30:01Z",
-    "Type": "Command",
-    "RequestType": "GetUserQuery",
-    "Request": { "UserId": "..." },
-    "Response": { ... }
-  }
-]
-```
-
-### Custom Logger
-
-Implement `IMediatorLogger` for custom logging:
-
-```csharp
-public class MyCustomLogger : IMediatorLogger
-{
-    private readonly ILogger<MyCustomLogger> _logger;
-
-    public MyCustomLogger(ILogger<MyCustomLogger> logger)
-    {
-        _logger = logger;
-    }
-
-    public void LogEvent(EventBase @event, Result[] handlerResults)
-    {
-        _logger.LogInformation("Event {EventType} processed with {HandlerCount} handlers",
-            @event.GetType().Name, handlerResults.Length);
-    }
-
-    public void LogCommand(Type requestType, object requestData, object? response)
-    {
-        _logger.LogInformation("Command {RequestType} executed", requestType.Name);
-    }
+    public string ToRecordingDataJson() => $$"""{"UserId":{{UserId}}}""";
 }
 ```
+
+For structured application diagnostics, inject `ILogger<T>` into handlers and use the standard Microsoft.Extensions.Logging APIs. Custom `IMessagingLogger` implementations can be registered using the generic overload.
+
+The overload accepting `MessagingModuleConfiguration` and `Type` properties remains available for legacy non-AOT queue/logger registrations; it is marked as requiring unreferenced code.
 
 ## Request Middleware
 

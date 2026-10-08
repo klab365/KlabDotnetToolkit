@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,9 +19,9 @@ internal sealed class MessagingHandlerMediator
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MessagingHandlerMediator> _logger;
     private readonly IMessagingLogger _messagingLogger;
-    private readonly ConcurrentDictionary<Type, EventHandlerWrapper> _eventHandlers = new();
-    private readonly ConcurrentDictionary<Type, RequestResponseHandlerWrapper> _requestHandlers = new();
-    private readonly ConcurrentDictionary<Type, StreamRequestResponseHandlerWrapper> _streamRequestHandlers = new();
+    private readonly Dictionary<Type, IEventHandlerWrapperRegistration> _eventHandlers;
+    private readonly Dictionary<(Type RequestType, Type ResponseType), IRequestResponseHandlerWrapperRegistration> _requestHandlers;
+    private readonly Dictionary<(Type RequestType, Type ResponseType), IStreamRequestResponseHandlerWrapperRegistration> _streamRequestHandlers;
     private readonly IEventHandlerProcessingStrategy _eventProcessingStrategy;
 
     public MessagingHandlerMediator(IServiceProvider serviceProvider, ILogger<MessagingHandlerMediator> logger, IMessagingLogger messagingLogger)
@@ -30,14 +30,16 @@ internal sealed class MessagingHandlerMediator
         _logger = logger;
         _messagingLogger = messagingLogger;
         _eventProcessingStrategy = serviceProvider.GetRequiredService<IEventHandlerProcessingStrategy>();
+        _eventHandlers = serviceProvider.GetServices<IEventHandlerWrapperRegistration>().GroupBy(static registration => registration.EventType).ToDictionary(static group => group.Key, static group => group.First());
+        _requestHandlers = serviceProvider.GetServices<IRequestResponseHandlerWrapperRegistration>().GroupBy(static registration => (registration.RequestType, registration.ResponseType)).ToDictionary(static group => group.Key, static group => group.First());
+        _streamRequestHandlers = serviceProvider.GetServices<IStreamRequestResponseHandlerWrapperRegistration>().GroupBy(static registration => (registration.RequestType, registration.ResponseType)).ToDictionary(static group => group.Key, static group => group.First());
     }
 
     public async Task<Result[]> PublishToHandlersAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : EventBase
     {
         try
         {
-            EventHandlerWrapper? eventHandler = GetEventHandler(@event);
-            if (eventHandler is null)
+            if (!_eventHandlers.TryGetValue(@event.GetType(), out IEventHandlerWrapperRegistration? eventHandler))
             {
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
@@ -46,8 +48,7 @@ internal sealed class MessagingHandlerMediator
                 return [];
             }
 
-            IEnumerable<EventHandlerExecutor> handlers = eventHandler.GetHandlers(_serviceProvider);
-            return await _eventProcessingStrategy.Handle(handlers, @event, cancellationToken);
+            return await _eventProcessingStrategy.Handle(eventHandler.GetHandlers(_serviceProvider, @event), @event, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -59,7 +60,11 @@ internal sealed class MessagingHandlerMediator
     public async Task<TResponse> SendToHanderAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
         where TResponse : notnull
     {
-        RequestResponseHandlerWrapper requestHandler = GetRequestHandlerWrapper(request);
+        if (!_requestHandlers.TryGetValue((request.GetType(), typeof(TResponse)), out IRequestResponseHandlerWrapperRegistration? requestHandler))
+        {
+            throw new KeyNotFoundException($"No request handler found for request type {request.GetType()}");
+        }
+
         TResponse response = (TResponse)await requestHandler.HandleAsync(request, _serviceProvider, cancellationToken);
         await _messagingLogger.LogCommandAsync(request.GetType(), request, response);
         return response;
@@ -68,60 +73,23 @@ internal sealed class MessagingHandlerMediator
     public async IAsyncEnumerable<TResponse> SendToStreamHandlerAsync<TResponse>(IStreamRequest<TResponse> request, [EnumeratorCancellation] CancellationToken cancellationToken)
         where TResponse : notnull
     {
-        StreamRequestResponseHandlerWrapper requestHandler = GetStreamRequestHandlerWrapper(request);
+        if (!_streamRequestHandlers.TryGetValue((request.GetType(), typeof(TResponse)), out IStreamRequestResponseHandlerWrapperRegistration? requestHandler))
+        {
+            throw new KeyNotFoundException($"No stream request handler found for request type {request.GetType()}");
+        }
 
-        await foreach (TResponse item in requestHandler.HandleAsync(request, _serviceProvider, cancellationToken))
+        await foreach (TResponse item in CastAsync<TResponse>(requestHandler.HandleAsync(request, _serviceProvider, cancellationToken)))
         {
             await _messagingLogger.LogStreamRequestAsync(request.GetType(), request, item);
             yield return item;
         }
     }
 
-    private EventHandlerWrapper? GetEventHandler(EventBase @event)
+    private static async IAsyncEnumerable<TResponse> CastAsync<TResponse>(IAsyncEnumerable<object> items)
     {
-        if (_eventHandlers.TryGetValue(@event.GetType(), out EventHandlerWrapper? cached))
+        await foreach (object item in items)
         {
-            return cached;
+            yield return (TResponse)item;
         }
-
-        Type wrapperType = typeof(EventHandlerWrapper<>).MakeGenericType(@event.GetType());
-        EventHandlerWrapper? wrapper = (EventHandlerWrapper?)_serviceProvider.GetService(wrapperType);
-
-        if (wrapper != null)
-        {
-            _eventHandlers.TryAdd(@event.GetType(), wrapper);
-        }
-
-        return wrapper;
-    }
-
-    private RequestResponseHandlerWrapper GetRequestHandlerWrapper<TResponse>(IRequest<TResponse> request)
-    {
-        return _requestHandlers.GetOrAdd(request.GetType(), requestType =>
-        {
-            Type wrapperType = typeof(RequestResponseHandlerWrapper<,>).MakeGenericType(requestType, typeof(TResponse));
-            object? wrapper = _serviceProvider.GetService(wrapperType);
-            if (wrapper == null)
-            {
-                throw new KeyNotFoundException($"No request handler found for request type {requestType}");
-            }
-
-            return (RequestResponseHandlerWrapper)wrapper;
-        });
-    }
-
-    private StreamRequestResponseHandlerWrapper GetStreamRequestHandlerWrapper<TResponse>(IStreamRequest<TResponse> request)
-    {
-        return _streamRequestHandlers.GetOrAdd(request.GetType(), requestType =>
-        {
-            Type wrapperType = typeof(StreamRequestResponseHandlerWrapper<,>).MakeGenericType(requestType, typeof(TResponse));
-            object? wrapper = _serviceProvider.GetService(wrapperType);
-            if (wrapper == null)
-            {
-                throw new KeyNotFoundException($"No stream request handler found for request type {requestType}");
-            }
-
-            return (StreamRequestResponseHandlerWrapper)wrapper;
-        });
     }
 }

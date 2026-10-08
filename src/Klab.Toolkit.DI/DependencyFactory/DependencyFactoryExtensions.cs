@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Klab.Toolkit.DI.DependencyFactory;
@@ -21,7 +22,7 @@ public static class DependencyFactoryExtensions
     /// <param name="services"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static IServiceCollection AddFactoryMethodTransient<TInterface, TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
+    public static IServiceCollection AddFactoryMethodTransient<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
     {
         services.AddTransient<TInstanceType>();
         services.AddDependencySpecificationMethod<TInterface, TInstanceType>(key);
@@ -41,7 +42,7 @@ public static class DependencyFactoryExtensions
     /// <param name="services"></param>
     /// <param name="key"></param>
     /// <returns></returns>
-    public static IServiceCollection AddFactoryMethodSingelton<TInterface, TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
+    public static IServiceCollection AddFactoryMethodSingelton<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
     {
         services.AddSingleton<TInstanceType>();
         services.AddDependencySpecificationMethod<TInterface, TInstanceType>(key);
@@ -61,14 +62,14 @@ public static class DependencyFactoryExtensions
     /// <typeparam name="TInterface"></typeparam>
     /// <typeparam name="TInstanceType"></typeparam>
     /// <returns></returns>
-    public static IServiceCollection AddFactoryMethodScoped<TInterface, TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
+    public static IServiceCollection AddFactoryMethodScoped<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
     {
         services.AddScoped<TInstanceType>();
         services.AddDependencySpecificationMethod<TInterface, TInstanceType>(key);
         return services;
     }
 
-    private static IServiceCollection AddDependencySpecificationMethod<TInterface, TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
+    private static IServiceCollection AddDependencySpecificationMethod<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInstanceType>(this IServiceCollection services, string key) where TInstanceType : class, TInterface
     {
         services.AddTransient((provider) =>
         {

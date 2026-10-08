@@ -76,10 +76,7 @@ public record Error : IError
     /// </example>
     public static Error FromException(Exception exception, string? code = null, string advice = "")
     {
-        if (exception == null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(exception);
 
         return new Error(
             code: code ?? exception.GetType().Name,
@@ -128,10 +125,7 @@ public record Error : IError
     /// </example>
     public static Error Composite(string code, string message, IEnumerable<IError> errors, string advice = "")
     {
-        if (errors == null)
-        {
-            throw new ArgumentNullException(nameof(errors));
-        }
+        ArgumentNullException.ThrowIfNull(errors);
 
         List<IError> errorList = errors.ToList();
         if (errorList.Count == 0)
@@ -150,10 +144,7 @@ public record Error : IError
     /// <returns>A new ErrorGeneric instance containing all the nested errors.</returns>
     public static Error Multiple(IEnumerable<IError> errors, string code = "MULTIPLE_ERRORS")
     {
-        if (errors == null)
-        {
-            throw new ArgumentNullException(nameof(errors));
-        }
+        ArgumentNullException.ThrowIfNull(errors);
 
         List<IError> errorList = errors.ToList();
         if (errorList.Count == 0)

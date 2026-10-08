@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -19,7 +19,6 @@ namespace Klab.Toolkit.Messaging;
 public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
 {
     private readonly string _logFilePath;
-    private readonly JsonSerializerOptions _jsonOptions;
     private readonly Channel<object> _channel = Channel.CreateUnbounded<object>(new UnboundedChannelOptions { SingleReader = true });
 
     /// <summary>
@@ -28,25 +27,13 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
     public FileMessagingLogger(MessagingModuleConfiguration configuration)
     {
         _logFilePath = Environment.ExpandEnvironmentVariables(configuration.MessagingLoggerPath);
-        _jsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters = { new JsonStringEnumConverter() },
-            PropertyNameCaseInsensitive = true,
-        };
-        _jsonOptions.Converters.Add(new EventInterfaceJsonConverter());
     }
 
     /// <inheritdoc/>
     public ValueTask LogEventAsync(EventBase @event, Result[] handlerResults)
     {
-        object entry = new {
-            Timestamp = DateTime.UtcNow,
-            Type = "Event",
-            Event = @event,
-            Results = GenerateResultLogs(handlerResults)
-        };
+        string? eventData = @event is IRecordable recordable ? recordable.ToRecordingDataJson() : null;
+        object entry = new RecordingEntry(DateTime.UtcNow, "Event", @event.GetType().Name, eventData, null, GenerateResultLogs(handlerResults));
         _channel.Writer.TryWrite(entry);
         return default;
     }
@@ -54,13 +41,9 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
     /// <inheritdoc/>
     public ValueTask LogCommandAsync(Type requestType, object requestData, object? response)
     {
-        object entry = new {
-            Timestamp = DateTime.UtcNow,
-            Type = "Command",
-            RequestType = requestType.Name,
-            Request = requestData,
-            Response = ExtractResponseValue(response)
-        };
+        string? request = requestData is IRecordable recordable ? recordable.ToRecordingDataJson() : null;
+        string? responseData = ExtractResponseValue(response);
+        object entry = new RecordingEntry(DateTime.UtcNow, "Command", requestType.Name, request, responseData);
         _channel.Writer.TryWrite(entry);
         return default;
     }
@@ -68,13 +51,9 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
     /// <inheritdoc/>
     public ValueTask LogStreamRequestAsync(Type requestType, object requestData, object? response)
     {
-        object entry = new {
-            Timestamp = DateTime.UtcNow,
-            Type = "StreamRequest",
-            RequestType = requestType.Name,
-            Request = requestData,
-            Response = ExtractResponseValue(response)
-        };
+        string? request = requestData is IRecordable recordable ? recordable.ToRecordingDataJson() : null;
+        string? responseData = ExtractResponseValue(response);
+        object entry = new RecordingEntry(DateTime.UtcNow, "StreamRequest", requestType.Name, request, responseData);
         _channel.Writer.TryWrite(entry);
         return default;
     }
@@ -108,46 +87,59 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
 
     private async Task AppendEntryToFileAsync(object entry, CancellationToken cancellationToken)
     {
-        string json = JsonSerializer.Serialize(entry, _jsonOptions);
-        await File.AppendAllTextAsync(_logFilePath, json + Environment.NewLine, cancellationToken);
+        RecordingEntry recording = (RecordingEntry)entry;
+        using MemoryStream buffer = new();
+        using (Utf8JsonWriter writer = new(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("Timestamp", recording.Timestamp);
+            writer.WriteString("Type", recording.Type);
+            writer.WriteString("RequestType", recording.MessageType);
+            if (recording.Type == "Event")
+            {
+                WriteJsonData(writer, "Event", recording.Data);
+            }
+            else
+            {
+                WriteJsonData(writer, "Request", recording.Data);
+                WriteJsonData(writer, "Response", recording.Response);
+            }
+            if (recording.Results is not null)
+            {
+                writer.WritePropertyName("Results");
+                writer.WriteStartArray();
+                foreach (object result in recording.Results)
+                {
+                    writer.WriteStringValue(((ResultLog)result).ErrorMessage);
+                }
+                writer.WriteEndArray();
+            }
+            writer.WriteEndObject();
+        }
+
+        await File.AppendAllTextAsync(_logFilePath, Encoding.UTF8.GetString(buffer.ToArray()) + Environment.NewLine, cancellationToken);
     }
 
-    private static object? ExtractResponseValue(object? response)
+    private static string? ExtractResponseValue(object? response)
     {
-        if (response == null)
+        return response switch
         {
-            return null;
+            IResultWithValue { IsSuccess: true } result when result.GetValue() is IRecordable recordable => recordable.ToRecordingDataJson(),
+            IRecordable recordable => recordable.ToRecordingDataJson(),
+            _ => null
+        };
+    }
+
+    private static void WriteJsonData(Utf8JsonWriter writer, string propertyName, string? json)
+    {
+        if (json is null)
+        {
+            return;
         }
 
-        Type responseType = response.GetType();
-
-        if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(Result<>))
-        {
-            System.Reflection.PropertyInfo? isSuccessProp = responseType.GetProperty("IsSuccess");
-            if (isSuccessProp == null)
-            {
-                return null;
-            }
-
-            bool isSuccess = (bool)(isSuccessProp.GetValue(response) ?? false);
-            if (isSuccess)
-            {
-                System.Reflection.PropertyInfo? valueProp = responseType.GetProperty("Value");
-                if (valueProp != null)
-                {
-                    return valueProp.GetValue(response);
-                }
-            }
-
-            return null;
-        }
-
-        if (response is Result)
-        {
-            return null;
-        }
-
-        return response;
+        using JsonDocument document = JsonDocument.Parse(json);
+        writer.WritePropertyName(propertyName);
+        document.RootElement.WriteTo(writer);
     }
 
     private static IEnumerable<object> GenerateResultLogs(Result[] results)
@@ -159,7 +151,7 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
 
         return results
             .Where(r => !r.IsSuccess)
-            .Select(r => new { ErrorMessage = GetErrorMessageSafely(r) });
+            .Select(r => new ResultLog(GetErrorMessageSafely(r)));
     }
 
     private static string? GetErrorMessageSafely(Result result)
@@ -178,6 +170,10 @@ public sealed class FileMessagingLogger : BackgroundService, IMessagingLogger
             return "Unknown error";
         }
     }
+
+    private sealed record RecordingEntry(DateTime Timestamp, string Type, string MessageType, string? Data, string? Response, IEnumerable<object>? Results = null);
+
+    private sealed record ResultLog(string? ErrorMessage);
 
     private sealed class FlushMarker
     {

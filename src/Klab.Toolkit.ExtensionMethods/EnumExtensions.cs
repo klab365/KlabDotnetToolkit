@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Klab.Toolkit.Common.Extensions;
@@ -17,7 +18,7 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="enumValue"></param>
     /// <returns></returns>
-    public static string GetDescription<T>(this T enumValue) where T : struct, IConvertible
+    public static string GetDescription<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(this T enumValue) where T : struct, IConvertible
     {
         if (!typeof(T).IsEnum)
         {
@@ -30,7 +31,7 @@ public static class EnumExtensions
             return string.Empty;
         }
 
-        FieldInfo? fieldInfo = enumValue.GetType().GetField(enumValue.ToString() ?? string.Empty);
+        FieldInfo? fieldInfo = typeof(T).GetField(enumValue.ToString() ?? string.Empty);
         if (fieldInfo is null)
         {
             return string.Empty;
@@ -59,7 +60,7 @@ public static class EnumExtensions
     /// </code>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Dictionary<string, string> GetDictionaryWithEnumNameAndDescription<T>()
+    public static Dictionary<string, string> GetDictionaryWithEnumNameAndDescription<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>()
     {
         FieldInfo[] fieldInfos = typeof(T).GetFields();
 

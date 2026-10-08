@@ -3,7 +3,7 @@
 A comprehensive collection of .NET libraries designed to accelerate development with proven patterns, utilities, and abstractions. Each package can be consumed independently, providing maximum flexibility for your .NET applications.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-netstandard2.1-blue.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-net8.0%20%7C%20net9.0%20%7C%20net10.0-blue.svg)](https://dotnet.microsoft.com/)
 
 ## 🚀 Quick Start
 
@@ -260,8 +260,8 @@ mise run check
 
 ## 📋 Compatibility
 
-- **Target Framework**: .NET Standard 2.1
-- **Language**: C# with latest language features
+- **Target Frameworks**: .NET 8, .NET 9, and .NET 10
+- **Native AOT**: Libraries are analyzed for trimming and AOT compatibility; Messaging has an AOT smoke test in CI
 - **Platforms**: Windows, macOS, Linux
 
 ## 🤝 Contributing
