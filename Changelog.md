@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0](https://github.com/klab365/KlabDotnetToolkit/compare/v4.0.0...v4.1.0) (2026-10-13)
+
+
+### Features
+
+* release results and messaging improvements ([4a89c88](https://github.com/klab365/KlabDotnetToolkit/commit/4a89c88964b57b61b61a9336c2304604f03a46ec))
+* release results and messaging improvements ([e807e0d](https://github.com/klab365/KlabDotnetToolkit/commit/e807e0d9c67ebb8ff72fefa593252bbf55a6832a))
+
 ## [Unreleased]
 
 ### Features
