@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+
+* extend result APIs and error metadata
+* add dead-letter event queue support and messaging reliability configuration
+
 ## Purpose
 
 This file present the software status in form of a "Changelog".
