@@ -20,7 +20,7 @@ public sealed class ReliabilityTests
         using IHost host = CreateHost(configuration =>
         {
             configuration.EventProcessingRetryCount = 2;
-            configuration.EventProcessingRetryDelay = TimeSpan.Zero;
+            configuration.EventProcessingRetryDelay = TimeSpan.FromMilliseconds(1);
         });
         RetryHandler handler = host.Services.GetRequiredService<RetryHandler>();
         TestDeadLetterQueue queue = host.Services.GetRequiredService<TestDeadLetterQueue>();
@@ -51,6 +51,37 @@ public sealed class ReliabilityTests
         queue.Failures.Single().Exception.Should().BeOfType<TimeoutException>();
 
         await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task DuplicateIdempotencyKey_ShouldProcessEachDeliveryWhenDisabled()
+    {
+        using IHost host = CreateHost(configuration => configuration.EnableIdempotency = false);
+        RetryHandler handler = host.Services.GetRequiredService<RetryHandler>();
+        IMediator mediator = host.Services.GetRequiredService<IMediator>();
+        await host.StartAsync();
+
+        await mediator.PublishAsync(new RetryEvent { Key = "same" });
+        await mediator.PublishAsync(new RetryEvent { Key = "same" });
+        await WaitUntilAsync(() => handler.AttemptCount == 2);
+
+        handler.AttemptCount.Should().Be(2);
+
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public void InvalidReliabilityConfiguration_ShouldThrow()
+    {
+        Action negativeRetryCount = () => AddMessagingModule(configuration => configuration.EventProcessingRetryCount = -1);
+        Action negativeRetryDelay = () => AddMessagingModule(configuration => configuration.EventProcessingRetryDelay = TimeSpan.FromMilliseconds(-1));
+        Action invalidBackoffFactor = () => AddMessagingModule(configuration => configuration.EventProcessingRetryBackoffFactor = 0.5);
+        Action invalidTimeout = () => AddMessagingModule(configuration => configuration.EventProcessingTimeout = TimeSpan.Zero);
+
+        negativeRetryCount.Should().Throw<ArgumentOutOfRangeException>();
+        negativeRetryDelay.Should().Throw<ArgumentOutOfRangeException>();
+        invalidBackoffFactor.Should().Throw<ArgumentOutOfRangeException>();
+        invalidTimeout.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -86,6 +117,12 @@ public sealed class ReliabilityTests
                 services.AddSingleton<IEventQueue>(provider => provider.GetRequiredService<TestDeadLetterQueue>());
             })
             .Build();
+    }
+
+    private static void AddMessagingModule(Action<MessagingModuleConfiguration> configure)
+    {
+        IServiceCollection services = new ServiceCollection();
+        services.AddMessagingModule(configure);
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
