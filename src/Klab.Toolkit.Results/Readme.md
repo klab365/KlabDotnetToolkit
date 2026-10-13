@@ -8,7 +8,8 @@ This project is a part of the Klab.Toolkit solution and provides a robust error 
 
 - **`Result<T>`**: A generic class that represents the result of an operation with a value. It can be either a success (containing a value) or a failure (containing an error).
 - **`Result`**: A non-generic class that represents the result of an operation without a value. It can be either a success or a failure.
-- **`Error`**: A record that represents an error with properties like Code, Message, Advice, optional Exception, and support for nested errors.
+- **`Error`**: A record that represents an error with stable Code, Message, Advice, optional Exception, immutable metadata, and support for nested errors.
+- **Try helpers**: `Try` and `TryAsync` convert thrown exceptions into failed results, optionally using a custom error factory.
 - **`ResultExtensions`**: A comprehensive set of extension methods that implement functional programming concepts like `Map`, `Bind`, `OnSuccess`, `OnFailure`, `Do`, and `Match`.
 
 ## When to Use
@@ -65,6 +66,8 @@ if (result.IsSuccess)
 The `Error` class is a fundamental part of the Result pattern, providing rich error information with support for hierarchical error structures.
 
 ### Error Creation
+
+Error codes are caller-defined identifiers; keep them stable for a given failure category. Metadata is copied when an error is created and can hold contextual key/value pairs.
 
 ```csharp
 // Basic error creation

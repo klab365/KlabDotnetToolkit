@@ -440,6 +440,72 @@ public static class ResultExtensions
         return result;
     }
 
+    /// <summary>
+    /// Executes an operation and converts any thrown exception into a failed result.
+    /// </summary>
+    public static Result<T> Try<T>(Func<T> operation, Func<Exception, IError>? errorFactory = null) where T : notnull
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        try
+        {
+            return Result.Success(operation());
+        }
+        catch (Exception exception)
+        {
+            return Result.Failure<T>((errorFactory ?? (caughtException => Error.FromException(caughtException)))(exception));
+        }
+    }
+
+    /// <summary>
+    /// Executes an asynchronous operation and converts any thrown exception into a failed result.
+    /// </summary>
+    public static async Task<Result<T>> TryAsync<T>(Func<Task<T>> operation, Func<Exception, IError>? errorFactory = null) where T : notnull
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        try
+        {
+            return Result.Success(await operation().ConfigureAwait(false));
+        }
+        catch (Exception exception)
+        {
+            return Result.Failure<T>((errorFactory ?? (caughtException => Error.FromException(caughtException)))(exception));
+        }
+    }
+
+    /// <summary>
+    /// Executes an operation and converts any thrown exception into a failed result.
+    /// </summary>
+    public static Result Try(Action operation, Func<Exception, IError>? errorFactory = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        try
+        {
+            operation();
+            return Result.Success();
+        }
+        catch (Exception exception)
+        {
+            return Result.Failure((errorFactory ?? (caughtException => Error.FromException(caughtException)))(exception));
+        }
+    }
+
+    /// <summary>
+    /// Executes an asynchronous operation and converts any thrown exception into a failed result.
+    /// </summary>
+    public static async Task<Result> TryAsync(Func<Task> operation, Func<Exception, IError>? errorFactory = null)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        try
+        {
+            await operation().ConfigureAwait(false);
+            return Result.Success();
+        }
+        catch (Exception exception)
+        {
+            return Result.Failure((errorFactory ?? (caughtException => Error.FromException(caughtException)))(exception));
+        }
+    }
+
     private static string CreateUnwrapFailureMessage(IError error)
     {
         return $"Cannot unwrap a failure result. Error Code: {error.Code}, Message: {error.Message}";

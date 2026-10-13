@@ -35,6 +35,11 @@ public interface IError
     IReadOnlyList<IError> NestedErrors { get; }
 
     /// <summary>
+    /// Gets metadata associated with this error.
+    /// </summary>
+    IReadOnlyDictionary<string, object?> Metadata { get; }
+
+    /// <summary>
     /// Gets a value indicating whether this error has nested errors.
     /// </summary>
     bool HasNestedErrors { get; }

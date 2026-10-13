@@ -8,6 +8,74 @@ namespace Klab.Toolkit.Results.Tests;
 public class ResultExtensionsTests
 {
     [Fact]
+    public void Try_ShouldReturnSuccess()
+    {
+        Result<int> result = ResultExtensions.Try(() => 42);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public void Try_ShouldConvertExceptionToFailure()
+    {
+        Result<int> result = ResultExtensions.Try<int>(() => throw new ArgumentException("bad input"));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(nameof(ArgumentException));
+        result.Error.Exception.Should().BeOfType<ArgumentException>();
+    }
+
+    [Fact]
+    public void Try_ShouldReturnSuccessWithoutValue()
+    {
+        bool executed = false;
+
+        Result result = ResultExtensions.Try(() => executed = true);
+
+        result.IsSuccess.Should().BeTrue();
+        executed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Try_ShouldUseCustomErrorFactory()
+    {
+        Result result = ResultExtensions.Try(
+            () => throw new InvalidOperationException("failed"),
+            exception => Error.Create("OPERATION_FAILED", exception.Message));
+
+        result.Error.Code.Should().Be("OPERATION_FAILED");
+    }
+
+    [Fact]
+    public async Task TryAsync_ShouldReturnSuccess()
+    {
+        Result<int> result = await ResultExtensions.TryAsync(() => Task.FromResult(42));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(42);
+    }
+
+    [Fact]
+    public async Task TryAsync_ShouldConvertExceptionToFailure()
+    {
+        Result<int> result = await ResultExtensions.TryAsync<int>(() => Task.FromException<int>(new InvalidOperationException("failed")));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(nameof(InvalidOperationException));
+    }
+
+    [Fact]
+    public async Task TryAsync_ShouldUseCustomErrorFactory()
+    {
+        Result result = await ResultExtensions.TryAsync(
+            () => Task.FromException(new InvalidOperationException("failed")),
+            exception => Error.Create("OPERATION_FAILED", exception.Message));
+
+        result.Error.Code.Should().Be("OPERATION_FAILED");
+    }
+
+    [Fact]
     public void Map_ShouldTransformSuccessValue()
     {
         Result<int> result = Result.Success(42).Map(x => x * 2);
