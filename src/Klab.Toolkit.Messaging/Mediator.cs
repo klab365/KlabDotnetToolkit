@@ -56,7 +56,7 @@ internal sealed class Mediator : IMediator
         }
         catch (OperationCanceledException)
         {
-            return Result.Success();
+            return Result.Failure(MessagingErrors.OperationCancelled());
         }
         catch (Exception ex)
         {

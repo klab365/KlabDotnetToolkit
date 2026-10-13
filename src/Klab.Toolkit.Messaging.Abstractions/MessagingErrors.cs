@@ -24,6 +24,11 @@ public static class MessagingErrors
         /// Generic Event Error Key
         /// </summary>
         public const string GenericEventErrorKey = "GenericEventError";
+
+        /// <summary>
+        /// Operation cancelled error key.
+        /// </summary>
+        public const string OperationCancelledKey = "OperationCancelled";
     }
 
     /// <summary>
@@ -35,4 +40,12 @@ public static class MessagingErrors
         Keys.EventHandlerNotFoundKey,
         message: $"No event handler found for event type {eventType}",
         advice: "Make sure you registered the event handler in the DI container. If not desired, then ignore this message.");
+
+    /// <summary>
+    /// Gets an error indicating that an operation was cancelled.
+    /// </summary>
+    /// <returns>The cancellation error.</returns>
+    public static IError OperationCancelled() => Error.Create(
+        Keys.OperationCancelledKey,
+        "The messaging operation was cancelled.");
 }
