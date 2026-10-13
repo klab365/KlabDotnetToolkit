@@ -413,6 +413,24 @@ public class ActivityService
 }
 ```
 
+## Delivery guarantees and reliability
+
+Event delivery is at-least-once while retries are enabled. Handlers must tolerate duplicate delivery. `EventBase.IdempotencyKey` defaults to its event ID and can be overridden with a stable business key. The in-process consumer skips keys after successful processing; this state is not durable, so distributed queue implementations should provide durable deduplication when required.
+
+Configure processing retries, exponential backoff, and per-attempt timeouts with `MessagingModuleConfiguration`:
+
+```csharp
+services.AddMessagingModule(configuration =>
+{
+    configuration.EventProcessingRetryCount = 3;
+    configuration.EventProcessingRetryDelay = TimeSpan.FromSeconds(1);
+    configuration.EventProcessingRetryBackoffFactor = 2;
+    configuration.EventProcessingTimeout = TimeSpan.FromSeconds(30);
+});
+```
+
+An event is dead-lettered after all attempts fail when its queue also implements `IDeadLetterEventQueue`. Queues that do not implement that optional interface retain their existing behavior. Cancellation passed to `PublishAsync` prevents enqueueing and returns a failed `Result` with the `OperationCancelled` error code. Request and stream cancellation is propagated to their handlers.
+
 ## Advanced Scenarios
 
 ### Error Handling in Handlers

@@ -16,4 +16,9 @@ public abstract record EventBase
     /// Time of the event creation
     /// </summary>
     public virtual DateTime CreatedAt { get; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Gets the key used to identify duplicate deliveries of this event.
+    /// </summary>
+    public virtual string IdempotencyKey => Id.ToString("N");
 }

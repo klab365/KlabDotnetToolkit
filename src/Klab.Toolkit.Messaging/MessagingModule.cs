@@ -21,6 +21,7 @@ public static class MessagingModule
     {
         MessagingModuleConfiguration configuration = new();
         configure?.Invoke(configuration);
+        ValidateConfiguration(configuration);
         services.AddSingleton(configuration);
 
         RegisterEventQueue(services, configuration);
@@ -44,6 +45,7 @@ public static class MessagingModule
     {
         MessagingModuleConfiguration configuration = new();
         configure?.Invoke(configuration);
+        ValidateConfiguration(configuration);
         services.AddSingleton(configuration);
         services.AddLogging();
         services.AddSingleton<IEventQueue, InMemoryMessageQueue>();
@@ -59,6 +61,29 @@ public static class MessagingModule
         services.AddHostedService<MessagingProcessorJob>();
         services.AddSingleton<IEventHandlerProcessingStrategy, TaskWhenAllPublisher>();
         return services;
+    }
+
+    private static void ValidateConfiguration(MessagingModuleConfiguration configuration)
+    {
+        if (configuration.EventProcessingRetryCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(configuration), "Event processing retry count cannot be negative.");
+        }
+
+        if (configuration.EventProcessingRetryDelay < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(configuration), "Event processing retry delay cannot be negative.");
+        }
+
+        if (configuration.EventProcessingRetryBackoffFactor < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(configuration), "Event processing retry backoff factor must be at least 1.");
+        }
+
+        if (configuration.EventProcessingTimeout is TimeSpan timeout && timeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(configuration), "Event processing timeout must be greater than zero.");
+        }
     }
 
     [RequiresUnreferencedCode("Registering implementations by Type is not supported with trimming or Native AOT.")]

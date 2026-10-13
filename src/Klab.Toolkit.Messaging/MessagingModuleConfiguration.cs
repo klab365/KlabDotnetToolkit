@@ -28,4 +28,30 @@ public class MessagingModuleConfiguration
     /// Gets or sets the messaging logger path
     /// </summary>
     public string MessagingLoggerPath { get; set; } = "messaging-logs.json";
+
+    /// <summary>
+    /// Gets or sets the maximum number of retries after the initial processing attempt.
+    /// </summary>
+    public int EventProcessingRetryCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delay before the first retry.
+    /// </summary>
+    public TimeSpan EventProcessingRetryDelay { get; set; } = TimeSpan.Zero;
+
+    /// <summary>
+    /// Gets or sets the multiplier applied to the retry delay after each failed attempt.
+    /// </summary>
+    public double EventProcessingRetryBackoffFactor { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the maximum time allowed for one event processing attempt.
+    /// A value of <see langword="null"/> disables the timeout.
+    /// </summary>
+    public TimeSpan? EventProcessingTimeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether successfully processed idempotency keys are retained to prevent duplicate delivery.
+    /// </summary>
+    public bool EnableIdempotency { get; set; } = true;
 }

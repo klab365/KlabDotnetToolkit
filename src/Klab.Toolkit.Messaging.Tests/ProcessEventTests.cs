@@ -42,7 +42,7 @@ public sealed class ProcessEventTests
     }
 
     [Fact]
-    public async Task PublishAsync_ShouldBeReturnResultSuccess_WhenCanceled()
+    public async Task PublishAsync_ShouldReturnFailure_WhenCanceled()
     {
         // arrange
         using CancellationTokenSource cts = new();
@@ -52,7 +52,8 @@ public sealed class ProcessEventTests
         Result result = await _eventBus.PublishAsync(new TestEvent1(), cts.Token);
 
         // assert
-        result.IsSuccess.Should().BeTrue();
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(MessagingErrors.Keys.OperationCancelledKey);
     }
 
     private Task<Result> TestEvent2aHandler(TestEvent2 @event, CancellationToken token)

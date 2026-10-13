@@ -191,8 +191,9 @@ public class EventBusCoverageTests
         // act
         Result result = await _eventBus.PublishAsync(new TestEvent1(), cts.Token);
 
-        // assert - even though canceled, it should return success
-        result.IsSuccess.Should().BeTrue();
+        // assert - cancellation is reported as a failed result
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(MessagingErrors.Keys.OperationCancelledKey);
     }
 
     [Fact]
