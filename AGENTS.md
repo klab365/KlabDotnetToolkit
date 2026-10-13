@@ -9,7 +9,8 @@ This document provides essential guidelines for AI coding agents working on the 
 * No summary of changes: Do not include a summary of changes in the response of the prompt. Focus on the code changes themselves.
 * No explanations: Do not provide explanations or justifications for the code changes. The code should speak for itself.
 * No comments: Avoid adding comments to the code unless absolutely necessary for clarity.
-* Dont run commands without explicit instruction or permission: Do not execute any commands or scripts without explicit instruction or permission from the user. Always ask for confirmation before running any code that could have side effects.
+* Do not run commands without explicit instruction or permission: Do not execute any commands or scripts without explicit instruction or permission from the user. Always ask for confirmation before running any code that could have side effects.
+* Before presenting code changes as complete, you are explicitly authorized to run `mise format` and `mise test` to format and validate them. These commands do not require additional confirmation.
 
 ## Build, Test, and Lint Commands
 

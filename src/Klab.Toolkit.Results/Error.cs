@@ -11,6 +11,7 @@ namespace Klab.Toolkit.Results;
 /// </summary>
 public record Error : IError
 {
+    private readonly IReadOnlyDictionary<string, object?> _metadata;
     /// <summary>
     /// Gets the unique error code that identifies the type of error.
     /// </summary>
@@ -37,6 +38,11 @@ public record Error : IError
     public IReadOnlyList<IError> NestedErrors { get; }
 
     /// <summary>
+    /// Gets immutable metadata associated with this error.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> Metadata => _metadata;
+
+    /// <summary>
     /// Gets a static instance representing no error (success state).
     /// </summary>
     public static readonly Error None = new(string.Empty, string.Empty, string.Empty, null, []);
@@ -47,15 +53,16 @@ public record Error : IError
     /// <param name="code">The unique error code.</param>
     /// <param name="message">The error message.</param>
     /// <param name="advice">Optional advice on how to resolve the error.</param>
+    /// <param name="metadata">Optional metadata associated with the error.</param>
     /// <returns>A new ErrorGeneric instance.</returns>
     /// <example>
     /// <code>
     /// var error = ErrorGeneric.Create("VAL001", "Invalid input", "Please provide a valid email address");
     /// </code>
     /// </example>
-    public static Error Create(string code, string message, string advice = "")
+    public static Error Create(string code, string message, string advice = "", IReadOnlyDictionary<string, object?>? metadata = null)
     {
-        return new Error(code, message, advice, null);
+        return new Error(code, message, advice, null, metadata: metadata);
     }
 
     /// <summary>
@@ -195,13 +202,17 @@ public record Error : IError
     /// <param name="advice">Advice on how to resolve the error.</param>
     /// <param name="exception">The underlying exception, if any.</param>
     /// <param name="nestedErrors">Collection of nested errors, if any.</param>
+    /// <param name="metadata">Metadata associated with the error, if any.</param>
     /// <exception cref="ArgumentNullException">Thrown when code or message is null.</exception>
-    protected Error(string code, string message, string advice, Exception? exception, IReadOnlyList<IError>? nestedErrors = null)
+    protected Error(string code, string message, string advice, Exception? exception, IReadOnlyList<IError>? nestedErrors = null, IReadOnlyDictionary<string, object?>? metadata = null)
     {
         Code = code ?? throw new ArgumentNullException(nameof(code));
         Message = message ?? throw new ArgumentNullException(nameof(message));
         Advice = advice ?? string.Empty;
         Exception = exception;
         NestedErrors = nestedErrors ?? Array.Empty<IError>();
+        _metadata = metadata is null
+            ? new Dictionary<string, object?>()
+            : new Dictionary<string, object?>(metadata);
     }
 }

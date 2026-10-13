@@ -8,6 +8,25 @@ namespace Klab.Toolkit.Results.Tests;
 public class ResultExtensionsTests
 {
     [Fact]
+    public void Try_ShouldConvertExceptionToFailure()
+    {
+        Result<int> result = ResultExtensions.Try<int>(() => throw new ArgumentException("bad input"));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(nameof(ArgumentException));
+        result.Error.Exception.Should().BeOfType<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task TryAsync_ShouldConvertExceptionToFailure()
+    {
+        Result<int> result = await ResultExtensions.TryAsync<int>(() => Task.FromException<int>(new InvalidOperationException("failed")));
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Code.Should().Be(nameof(InvalidOperationException));
+    }
+
+    [Fact]
     public void Map_ShouldTransformSuccessValue()
     {
         Result<int> result = Result.Success(42).Map(x => x * 2);

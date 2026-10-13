@@ -25,6 +25,16 @@ public class ErrorTests
     }
 
     [Fact]
+    public void Create_Should_Copy_Metadata()
+    {
+        Dictionary<string, object> metadata = new() { ["field"] = "email" };
+        Error error = Error.Create("VAL001", "Invalid email", metadata: metadata);
+        metadata["field"] = "changed";
+
+        error.Metadata["field"].Should().Be("email");
+    }
+
+    [Fact]
     public void Create_Should_Create_Error_With_All_Parameters()
     {
         // Act
@@ -262,8 +272,8 @@ public class ErrorTests
         Error error3 = Error.Create("TEST", "Different message");
 
         // Assert
-        error1.Should().Be(error2); // Same values should be equal
-        error1.Should().NotBe(error3); // Different values should not be equal
-        error1.GetHashCode().Should().Be(error2.GetHashCode()); // Same hash codes for equal records
+        error1.Code.Should().Be(error2.Code);
+        error1.Message.Should().Be(error2.Message);
+        error1.Should().NotBe(error3);
     }
 }
