@@ -32,6 +32,7 @@ public class ErrorTests
         metadata["field"] = "changed";
 
         error.Metadata["field"].Should().Be("email");
+        error.Metadata.Should().NotBeAssignableTo<Dictionary<string, object>>();
     }
 
     [Fact]

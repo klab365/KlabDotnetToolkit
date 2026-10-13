@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Klab.Toolkit.Results;
@@ -211,8 +212,8 @@ public record Error : IError
         Advice = advice ?? string.Empty;
         Exception = exception;
         NestedErrors = nestedErrors ?? Array.Empty<IError>();
-        _metadata = metadata is null
+        _metadata = new ReadOnlyDictionary<string, object?>(metadata is null
             ? new Dictionary<string, object?>()
-            : new Dictionary<string, object?>(metadata);
+            : new Dictionary<string, object?>(metadata));
     }
 }
